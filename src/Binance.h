@@ -13,6 +13,7 @@ const std::string USED_WEIGHT_PER_INTERVAL{"x-mbx-used-weight-1m:"};
 const std::string HTTP_RESPONSE{"HTTP/1.1 200 OK"};
 const std::string RESPONSE{"Response"};
 const std::string OK_RESPONSE{"200"};
+const int KEY_COUNTER(3); 
 
 // Split 
 std::vector<std::string> split(const std::string& str, const std::string& delim)

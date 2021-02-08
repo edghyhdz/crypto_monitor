@@ -8,7 +8,6 @@
 #include <vector>
 #include <fstream>
 
-
 /// g++ response.cpp -lcurl
 
 std::vector<std::string> split(const std::string& str, const std::string& delim)
@@ -115,6 +114,7 @@ std::map<std::string, std::string> parseHeaderData(std::string &readBuffer) {
           boost::algorithm::trim_copy(header.substr(index + 1))));
     }
 
+    // If correct response return 200
     if (header.find(status_response) != std::string::npos) {
           headerDictionary.insert(std::make_pair("response", "200"));
           keys_counter++;
@@ -132,10 +132,6 @@ std::map<std::string, std::string> parseHeaderData(std::string &readBuffer) {
       break;
     }
   }
-
-  // for (auto &kv : headerDictionary) {
-  //   std::cout << "header data: " << kv.first << ": " << kv.second << std::endl;
-  // }
 
   std::cout << "RESPONSE                : " << headerDictionary.at("response") << std::endl;
   std::cout << "USED WEIGHT             : " << headerDictionary.at("x-mbx-used-weight") << std::endl;
@@ -162,10 +158,8 @@ int main(int argc, char *argv[]) {
   // curl_easy_setopt(easyhandle, CURLOPT_PROXY, "http://my.proxy.net");   //
   // replace with your actual proxy
   curl_easy_setopt(easyhandle, CURLOPT_PROXYPORT, 8080L);
-  curl_easy_setopt(easyhandle, CURLOPT_HEADER,
-                   1); // Used to write response header data back
+  curl_easy_setopt(easyhandle, CURLOPT_HEADER, 1); // Used to write response header data back
   curl_easy_setopt(easyhandle, CURLOPT_WRITEFUNCTION, WriteCallback);
-
   curl_easy_setopt(easyhandle, CURLOPT_WRITEDATA, &readBuffer);
   curl_easy_perform(easyhandle);
 
@@ -174,7 +168,6 @@ int main(int argc, char *argv[]) {
 
   saveCSVData(readBuffer);
 
-  // std::cout << "Data: " << readBuffer << std::endl;
   return 0;
 }
 

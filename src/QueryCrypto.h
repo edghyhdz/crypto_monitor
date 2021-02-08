@@ -13,6 +13,10 @@ class QueryCrypto {
 public:
   // Currency pair
   QueryCrypto(std::string curPair, int id) : _curPair(curPair), _id(id) {};
+
+  // Making http request
+  void getData(); 
+  // Data processing
   void saveCSVData(std::string &readBuffer); 
   std::map<std::string, std::string> parseHeaderData(std::string &readBuffer); 
 

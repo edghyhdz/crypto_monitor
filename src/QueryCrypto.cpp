@@ -9,8 +9,7 @@
 // Class definitions
 void QueryCrypto::saveCSVData(std::string &readBuffer) {
   std::ofstream outfile;
-  outfile.open("test_file.csv",
-               std::ios_base::app); // append instead of overwrite
+  outfile.open("test_file.csv", std::ios_base::app); 
 
   std::string::size_type index;
   std::istringstream resp(readBuffer);
@@ -73,14 +72,14 @@ void QueryCrypto::saveCSVData(std::string &readBuffer) {
   }
 }
 
-std::map<std::string, std::string>
-QueryCrypto::parseHeaderData(std::string &readBuffer) {
+std::map<std::string, std::string> QueryCrypto::parseHeaderData(std::string &readBuffer) {
   std::map<std::string, std::string> headerDictionary;
   std::istringstream resp(readBuffer);
   std::string header;
   std::string::size_type index;
   std::string::size_type found_keys;
 
+  // Check when we have all keys we need
   int keys_counter = 0;
 
   while (std::getline(resp, header) && header != "\r") {
@@ -106,7 +105,7 @@ QueryCrypto::parseHeaderData(std::string &readBuffer) {
     }
 
     // Break while loop once we have all keys we want
-    if (keys_counter == 3) {
+    if (keys_counter == Binance::KEY_COUNTER) {
       break;
     }
   }
