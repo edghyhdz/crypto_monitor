@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <fstream>
 
 
 /// g++ response.cpp -lcurl
@@ -38,63 +39,70 @@ std::vector<std::string> split(const std::string& str, const std::string& delim)
     return tokens;
 }
 
-std::vector<std::map<std::string, BaseObject>> parseJsonData(std::string &readBuffer) {
-  std::vector<std::map<std::string, BaseObject>> dataDictionary;
+void saveCSVData(std::string &readBuffer) {
+  std::ofstream outfile;
+  outfile.open("test_file.csv", std::ios_base::app); // append instead of overwrite
+
   std::string::size_type index;
   std::istringstream resp(readBuffer);
-  std::string data;
+
+  size_t pos = 0;
+  std::string token, row, columns, last_char, data;
+  std::string delimiter = ",";
+  bool lastColumn = false;
+  int c_loop = 0; // Used to count the colums of the data to query
 
   while (std::getline(resp, data)) {
     index = data.find('[', 0);
     if (index != std::string::npos) {
-      std::replace(data.begin(), data.end(), '[', '\0');
-      std::replace(data.begin(), data.end(), ']', '\0');
-
-      std::string delimiter = ",";
-
-      size_t pos = 0;
-      std::string token;
-      std::vector<std::string> allData; 
-      std::string row; 
-      std::string columns; 
-      int c_loop = 0;   // Used to count the colums of the data to query
-
+      std::replace(data.begin(), data.end(), '[', ' ');
+      // Replace <[> with <,>, so that find method goes until last item
+      std::replace(data.begin(), data.end(), ']', ',');
+      // While delimiter is found
       while ((pos = data.find(delimiter)) != std::string::npos) {
+
         token = data.substr(0, pos);
-        // std::cout << token << std::endl;
-        std::vector<std::string> splitString = split(token, ":"); 
-        std::cout << "VALUE?: " << splitString[1] << std::endl; 
-        // Split token into key/value pairs
+        // Check if we are in the last column
+        lastColumn = (token.find('}') != std::string::npos) ? true : false;
 
+        // Replace quotes with empty char
+        std::replace(token.begin(), token.end(), '"', ' ');
 
+        // If last column, get rid of curlybrackets
+        if (lastColumn == true) {
+          std::replace(token.begin(), token.end(), '}', ' ');
+        } else {
+          std::replace(token.begin(), token.end(), '{', ' ');
+        }
+
+        // Split token into key/value 
+        std::vector<std::string> splitString = split(token, ":");
         data.erase(0, pos + delimiter.length());
 
+        // Add column names to column string
         if (c_loop == 0) {
-            columns += ' '; 
+          last_char = (lastColumn) ? "" : ";";
+          columns += splitString[0] + last_char;
+          if (lastColumn) {
+            std::cout << columns << std::endl;
+          }
         }
 
-
-        if (token.find('}') != std::string::npos) {
+        // Add new columns to row string
+        if (lastColumn) {
           c_loop++;
-          std::replace(token.begin(), token.end(), '}', '\0');
-          row += token;
-          allData.push_back(row);
-        //   std::cout << row << std::endl;
-          row = ""; 
+          row += splitString[1] + "\n";
+          outfile << row;
+          // allData.push_back(row);
+          // std::cout << row << std::endl;
+          row = "";
+        } else {
+          row += splitString[1] + ";";
         }
-        else {
-            std::replace(token.begin(), token.end(), '{', '\0');
-            row += token + ";"; 
-        }
-
-      }
-      std::cout  << data << std::endl;
-      break; 
+      }    
+      break;
     }
   }
-
-  return dataDictionary; 
-
 }
 
 std::map<std::string, std::string> parseHeaderData(std::string &readBuffer) {
@@ -170,8 +178,8 @@ int main(int argc, char *argv[]) {
   std::map<std::string, std::string> headerDictionary =
       parseHeaderData(readBuffer);
 
-  parseJsonData(readBuffer);
+  saveCSVData(readBuffer);
 
-  //   std::cout << "Data: " << readBuffer << std::endl;
+  // std::cout << "Data: " << readBuffer << std::endl;
   return 0;
 }
