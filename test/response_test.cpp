@@ -11,18 +11,6 @@
 
 /// g++ response.cpp -lcurl
 
-struct BaseObject {};
-
-struct ObjectDouble : public BaseObject
-{
-  double a;
-};
-
-struct ObjectString : public BaseObject
-{
-  std::string a;
-};
-
 std::vector<std::string> split(const std::string& str, const std::string& delim)
 {
     std::vector<std::string> tokens;
@@ -83,9 +71,10 @@ void saveCSVData(std::string &readBuffer) {
         if (c_loop == 0) {
           last_char = (lastColumn) ? "" : ";";
           columns += splitString[0] + last_char;
-          if (lastColumn) {
-            std::cout << columns << std::endl;
-          }
+          // if (lastColumn) {
+          //   // Pass columns into text only if beginning of file
+          //   std::cout << columns << std::endl;
+          // }
         }
 
         // Add new columns to row string
@@ -93,8 +82,6 @@ void saveCSVData(std::string &readBuffer) {
           c_loop++;
           row += splitString[1] + "\n";
           outfile << row;
-          // allData.push_back(row);
-          // std::cout << row << std::endl;
           row = "";
         } else {
           row += splitString[1] + ";";
@@ -128,12 +115,15 @@ std::map<std::string, std::string> parseHeaderData(std::string &readBuffer) {
           boost::algorithm::trim_copy(header.substr(index + 1))));
     }
 
+    if (header.find(status_response) != std::string::npos) {
+          headerDictionary.insert(std::make_pair("response", "200"));
+          keys_counter++;
+    }
+
     // Check if we have all keys we are interested on
     if (header.find(used_weight) != std::string::npos) {
       keys_counter++;
     } else if (header.find(used_weight_interval) != std::string::npos) {
-      keys_counter++;
-    } else if (header.find(status_response) != std::string::npos) {
       keys_counter++;
     }
 
@@ -143,9 +133,13 @@ std::map<std::string, std::string> parseHeaderData(std::string &readBuffer) {
     }
   }
 
-  for (auto &kv : headerDictionary) {
-    std::cout << "header data: " << kv.first << ": " << kv.second << std::endl;
-  }
+  // for (auto &kv : headerDictionary) {
+  //   std::cout << "header data: " << kv.first << ": " << kv.second << std::endl;
+  // }
+
+  std::cout << "RESPONSE                : " << headerDictionary.at("response") << std::endl;
+  std::cout << "USED WEIGHT             : " << headerDictionary.at("x-mbx-used-weight") << std::endl;
+  std::cout << "USED WEIGHT / INTERVAL  : " << headerDictionary.at("x-mbx-used-weight-1m") << std::endl;
 
   return headerDictionary;
 }
@@ -163,7 +157,7 @@ int main(int argc, char *argv[]) {
   std::string headerData;
 
   curl_easy_setopt(easyhandle, CURLOPT_URL,
-                   "https://api.binance.com/api/v3/aggTrades?symbol=BTCUSDT");
+                   "https://api.binance.com/api/v3/aggTrades?limit=775&symbol=BTCUSDT");
   // curl_easy_setopt(easyhandle, CURLOPT_VERBOSE, 1L);
   // curl_easy_setopt(easyhandle, CURLOPT_PROXY, "http://my.proxy.net");   //
   // replace with your actual proxy
@@ -188,5 +182,6 @@ int main(int argc, char *argv[]) {
 TODO: 
 - Class to query data
 - Threads to search for different cryptos
+- Add column names to beginning of file
 
 */
