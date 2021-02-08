@@ -183,3 +183,10 @@ int main(int argc, char *argv[]) {
   // std::cout << "Data: " << readBuffer << std::endl;
   return 0;
 }
+
+/*
+TODO: 
+- Class to query data
+- Threads to search for different cryptos
+
+*/
