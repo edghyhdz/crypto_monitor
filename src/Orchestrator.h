@@ -18,6 +18,13 @@ class QueryCrypto;
 
 class Orchestrator {
 public:
+Orchestrator(); 
+~Orchestrator(); 
+// Reference: https://stackoverflow.com/a/23575458/13743493
+Orchestrator(Orchestrator &&o) = default;
+
+void runQuery(); 
+
 private:
   std::vector<std::shared_ptr<QueryCrypto>> _cryptos;
   std::vector<std::thread> _threads;
