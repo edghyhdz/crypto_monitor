@@ -6,8 +6,8 @@
 
 // Binance api end point definitions and utility methods
 namespace Binance {
-// Paths
-const std::string BASE_URL{"https://api.binance.com/api/v3/aggTrades?limit=775&symbol="};
+// TODO -> modify limit so that it takes it also as an argument
+const std::string BASE_URL{"https://api.binance.com/api/v3/aggTrades?limit=130&symbol="};
 const std::string USED_WEIGHT{"x-mbx-used-weight"};
 const std::string USED_WEIGHT_PER_INTERVAL{"x-mbx-used-weight-1m"};
 const std::string HTTP_RESPONSE{"HTTP/1.1 200 OK"};
