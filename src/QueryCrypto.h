@@ -4,7 +4,6 @@
 #include <string>
 #include <iostream>
 #include <map>
-#include "Binance.h"
 
 /*
 Crypto currency query class declaration
@@ -16,6 +15,7 @@ public:
 
   // Making http request
   void getData(); 
+  void runQueries(); 
   // Data processing
   void saveCSVData(std::string &readBuffer); 
   std::map<std::string, std::string> parseHeaderData(std::string &readBuffer); 
