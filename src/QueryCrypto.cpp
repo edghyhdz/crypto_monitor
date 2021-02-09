@@ -48,7 +48,7 @@ void QueryCrypto::getData() {
   }
   
   if (std::stoi(hDictionary.at(Binance::USED_WEIGHT)) > Binance::INTERVAL_LIMIT){
-    // Save data into csv file
+    // If limit is about to exceed -> send message to kill all requests
     std::cout << "Should send message to all threads to terminate" << std::endl; 
   }
 }
@@ -182,8 +182,15 @@ QueryCrypto::parseHeaderData(std::string &readBuffer) {
     std::cout << "Out of range error" << std::endl;
   }
 
+  // If no response was gotten 
   if (!found_response) {
     headerDictionary.insert(std::make_pair(Binance::RESPONSE, Binance::BAD_RESPONSE));
+    
+    // If not found -> incert another used weight value
+    if ( headerDictionary.find(Binance::USED_WEIGHT) == headerDictionary.end() ) {
+      headerDictionary.insert(std::make_pair(Binance::USED_WEIGHT, Binance::BAD_RESPONSE));
+    } 
+    
     std::cout << "Bad Response" << std::endl; 
   }
 
