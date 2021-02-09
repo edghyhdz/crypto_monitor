@@ -20,7 +20,6 @@ void QueryCrypto::runQueries() {
     this->getData();
     std::this_thread::sleep_for(std::chrono::seconds(10));
     // TODO: Cycle duration instead of sleep
-    std::cout << "Query again after 10 sec sleep" << std::endl;
   }
 }
 
@@ -42,9 +41,16 @@ void QueryCrypto::getData() {
   // Parse header dictionary
   // To be used to check current requests weight -> limit / minute
   hDictionary = this->parseHeaderData(readBuffer);
-
-  // Save data into csv file
-  this->saveCSVData(readBuffer);
+  
+  if (hDictionary.at(Binance::RESPONSE) == Binance::OK_RESPONSE){
+    // Save data into csv file
+    this->saveCSVData(readBuffer);
+  }
+  
+  if (std::stoi(hDictionary.at(Binance::USED_WEIGHT)) > Binance::INTERVAL_LIMIT){
+    // Save data into csv file
+    std::cout << "Should send message to all threads to terminate" << std::endl; 
+  }
 }
 
 // Saves queried data into csv file
@@ -126,7 +132,7 @@ QueryCrypto::parseHeaderData(std::string &readBuffer) {
   
   // Check when we have all keys we need
   int keys_counter = 0;
-
+  bool found_response = false; 
   while (std::getline(resp, header) && header != "\r") {
 
     index = header.find(':', 0);
@@ -141,6 +147,7 @@ QueryCrypto::parseHeaderData(std::string &readBuffer) {
       headerDictionary.insert(
           std::make_pair(Binance::RESPONSE, Binance::OK_RESPONSE));
       keys_counter++;
+      found_response = true; 
     }
 
     // Check if we have all keys we are interested on
@@ -163,12 +170,22 @@ QueryCrypto::parseHeaderData(std::string &readBuffer) {
 
   }
 
-  std::cout << "RESPONSE                : " << headerDictionary.at(Binance::RESPONSE) << std::endl;
-  std::cout << "USED WEIGHT             : "
-            << headerDictionary.at(Binance::USED_WEIGHT) << std::endl;
-  std::cout << "USED WEIGHT / INTERVAL  : "
-            << headerDictionary.at(Binance::USED_WEIGHT_PER_INTERVAL)
-            << std::endl;
+  try {
+    std::cout << "RESPONSE                : "
+              << headerDictionary.at(Binance::RESPONSE) << std::endl;
+    std::cout << "USED WEIGHT             : "
+              << headerDictionary.at(Binance::USED_WEIGHT) << std::endl;
+    std::cout << "USED WEIGHT / INTERVAL  : "
+              << headerDictionary.at(Binance::USED_WEIGHT_PER_INTERVAL)
+              << std::endl;
+  } catch (std::out_of_range) {
+    std::cout << "Out of range error" << std::endl;
+  }
+
+  if (!found_response) {
+    headerDictionary.insert(std::make_pair(Binance::RESPONSE, Binance::BAD_RESPONSE));
+    std::cout << "Bad Response" << std::endl; 
+  }
 
   return headerDictionary;
 }

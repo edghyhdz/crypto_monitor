@@ -8,14 +8,14 @@
 
 /*
 Orchestrator member attribute declarations
-g++ -g src/QueryCrypto.cpp src/QueryCrypto.h src/Binance.h src/Orchestrator.cpp src/Orchestrator.h -o run.out -lcurl -pthread
 
+g++ -g src/QueryCrypto.cpp src/QueryCrypto.h src/Binance.h src/Orchestrator.cpp src/Orchestrator.h -o run.out -lcurl -pthread
 
 */
 
 Orchestrator::Orchestrator() {
   // TODO: Put this into a txt file
-  std::vector<std::string> currencies{"BTCUSDT", "ETHUSDT"};
+  std::vector<std::string> currencies{"REEFUSDT", "CHZUSDT", "MATICUSDT", "VETUSDT", "FETUSDT", "ZILUSDT", "RLCUSDT", "OCEANUSDT", "ATOMUSDT", "LUNAUSDT"};
   int id_currency = 0;
 
   for (std::string coin : currencies) {
@@ -37,8 +37,6 @@ Orchestrator::~Orchestrator() {
   _threadCryptos.front().join();
   std::for_each(_threadCryptos.begin(), _threadCryptos.end(),
                 [](std::thread &t) { t.join(); });
-
-  std::cout << "Finished calling destructor" << std::endl;
 
 }
 
