@@ -1,15 +1,42 @@
 #include "QueryCrypto.h"
 #include "Binance.h"
 #include <algorithm>
+#include <boost/algorithm/string.hpp>
+#include <curl/curl.h>
 #include <fstream>
 #include <sstream>
-#include <boost/algorithm/string.hpp>
 
+/*
+QueryCrypto class definitions
+*/
 
-// Class definitions
+// Queries data to binance endpoint
+void QueryCrypto::getData() {
+  
+  curl_global_init(CURL_GLOBAL_ALL);
+  CURL *curl = curl_easy_init();
+  std::string readBuffer;
+  std::map<std::string, std::string> hDictionary; 
+  curl_easy_setopt(curl, CURLOPT_URL, (Binance::BASE_URL + this->getCoinPair()).c_str());
+  curl_easy_setopt(curl, CURLOPT_PROXYPORT, 8080L);
+  // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);  
+  curl_easy_setopt(curl, CURLOPT_HEADER, 1); // Used to write response header data back
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Binance::WriteCallback);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+  curl_easy_perform(curl);
+
+  // Parse header dictionary
+  // To be used to check current requests weight -> limit / minute
+  hDictionary = this->parseHeaderData(readBuffer);
+
+  // Save data into csv file
+  this->saveCSVData(readBuffer);
+}
+
+// Saves queried data into csv file
 void QueryCrypto::saveCSVData(std::string &readBuffer) {
   std::ofstream outfile;
-  outfile.open("test_file.csv", std::ios_base::app); 
+  outfile.open("test_file.csv", std::ios_base::app);
 
   std::string::size_type index;
   std::istringstream resp(readBuffer);
@@ -72,13 +99,16 @@ void QueryCrypto::saveCSVData(std::string &readBuffer) {
   }
 }
 
-std::map<std::string, std::string> QueryCrypto::parseHeaderData(std::string &readBuffer) {
+std::map<std::string, std::string>
+QueryCrypto::parseHeaderData(std::string &readBuffer) {
   std::map<std::string, std::string> headerDictionary;
   std::istringstream resp(readBuffer);
   std::string header;
   std::string::size_type index;
   std::string::size_type found_keys;
 
+  headerDictionary.clear();
+  
   // Check when we have all keys we need
   int keys_counter = 0;
 
@@ -93,14 +123,16 @@ std::map<std::string, std::string> QueryCrypto::parseHeaderData(std::string &rea
 
     // If correct response return 200
     if (header.find(Binance::HTTP_RESPONSE) != std::string::npos) {
-      headerDictionary.insert(std::make_pair(Binance::RESPONSE, Binance::OK_RESPONSE));
+      headerDictionary.insert(
+          std::make_pair(Binance::RESPONSE, Binance::OK_RESPONSE));
       keys_counter++;
     }
 
     // Check if we have all keys we are interested on
     if (header.find(Binance::USED_WEIGHT) != std::string::npos) {
       keys_counter++;
-    } else if (header.find(Binance::USED_WEIGHT_PER_INTERVAL) != std::string::npos) {
+    } else if (header.find(Binance::USED_WEIGHT_PER_INTERVAL) !=
+               std::string::npos) {
       keys_counter++;
     }
 
@@ -108,21 +140,28 @@ std::map<std::string, std::string> QueryCrypto::parseHeaderData(std::string &rea
     if (keys_counter == Binance::KEY_COUNTER) {
       break;
     }
+
+    // TODO: Check headers -> seems to be going on a loop several times
+    // for (auto &kv : headerDictionary){
+    //   std::cout << "Headers => " << kv.first + ": " << kv.second << std::endl; 
+    // }
+
   }
 
-  std::cout << "RESPONSE                : " << headerDictionary.at(Binance::RESPONSE)
-            << std::endl;
+  std::cout << "RESPONSE                : " << headerDictionary.at(Binance::RESPONSE) << std::endl;
   std::cout << "USED WEIGHT             : "
             << headerDictionary.at(Binance::USED_WEIGHT) << std::endl;
   std::cout << "USED WEIGHT / INTERVAL  : "
-            << headerDictionary.at(Binance::USED_WEIGHT_PER_INTERVAL) << std::endl;
+            << headerDictionary.at(Binance::USED_WEIGHT_PER_INTERVAL)
+            << std::endl;
 
   return headerDictionary;
 }
 
-int main() {
-  QueryCrypto crypto = QueryCrypto("test", 1);
 
-  crypto.printCoinPair();
+// Test function
+int main() {
+  QueryCrypto crypto = QueryCrypto("BTCUSDT", 1);
+  crypto.getData();
   return 0;
 }
