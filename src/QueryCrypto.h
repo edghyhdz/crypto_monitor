@@ -20,6 +20,9 @@ public:
   void saveCSVData(std::string &readBuffer); 
   std::map<std::string, std::string> parseHeaderData(std::string &readBuffer); 
 
+  // getters
+  std::string getCoinPair(){ return _curPair; }
+
   void printCoinPair() { std::cout << "Coin: " << _curPair << std::endl; }; 
 
 private:
