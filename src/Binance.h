@@ -13,6 +13,8 @@ const std::string USED_WEIGHT_PER_INTERVAL{"x-mbx-used-weight-1m"};
 const std::string HTTP_RESPONSE{"HTTP/1.1 200 OK"};
 const std::string RESPONSE{"Response"};
 const std::string OK_RESPONSE{"200"};
+const std::string BAD_RESPONSE{"404"}; 
+const int INTERVAL_LIMIT(1100); 
 const int KEY_COUNTER(3);
 
 // Split
