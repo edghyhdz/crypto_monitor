@@ -5,10 +5,24 @@
 #include <curl/curl.h>
 #include <fstream>
 #include <sstream>
+#include <thread>
+
 
 /*
 QueryCrypto class definitions
 */
+
+
+// Run queries in a while loop
+void QueryCrypto::runQueries() {
+  std::cout << "Started querying: " << this->getCoinPair() << std::endl;
+  while (true) {
+    this->getData();
+    std::this_thread::sleep_for(std::chrono::seconds(10));
+    // TODO: Cycle duration instead of sleep
+    std::cout << "Query again after 10 sec sleep" << std::endl;
+  }
+}
 
 // Queries data to binance endpoint
 void QueryCrypto::getData() {
@@ -36,7 +50,8 @@ void QueryCrypto::getData() {
 // Saves queried data into csv file
 void QueryCrypto::saveCSVData(std::string &readBuffer) {
   std::ofstream outfile;
-  outfile.open("test_file.csv", std::ios_base::app);
+  std::string file_name = this->getCoinPair() + ".csv"; 
+  outfile.open(file_name, std::ios_base::app);
 
   std::string::size_type index;
   std::istringstream resp(readBuffer);
@@ -160,8 +175,8 @@ QueryCrypto::parseHeaderData(std::string &readBuffer) {
 
 
 // Test function
-int main() {
-  QueryCrypto crypto = QueryCrypto("BTCUSDT", 1);
-  crypto.getData();
-  return 0;
-}
+// int main() {
+//   QueryCrypto crypto = QueryCrypto("BTCUSDT", 1);
+//   crypto.getData();
+//   return 0;
+// }
