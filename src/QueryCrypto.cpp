@@ -14,7 +14,7 @@ QueryCrypto class definitions
 
 
 // Run queries in a while loop
-void QueryCrypto::runQueries() {
+void QueryCrypto::runSingleQueries() {
   std::cout << "Started querying: " << this->getCoinPair() << std::endl;
   while (true) {
     this->getData();
@@ -27,29 +27,136 @@ void QueryCrypto::runQueries() {
 void QueryCrypto::getData() {
   
   curl_global_init(CURL_GLOBAL_ALL);
+  long http_code = 0; 
   CURL *curl = curl_easy_init();
   std::string readBuffer;
   std::map<std::string, std::string> hDictionary; 
-  curl_easy_setopt(curl, CURLOPT_URL, (Binance::BASE_URL + this->getCoinPair()).c_str());
-  curl_easy_setopt(curl, CURLOPT_PROXYPORT, 8080L);
-  // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);  
+  std::string url;
+
+  // Check if all coins need to be queried and assign endpoint accordingly
+  if (this->allQueries()){
+    url = Binance::TICKER; 
+  }
+  else {
+    url = Binance::BASE_URL + this->getCoinPair(); 
+  }
+
+  curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+  // curl_easy_setopt(curl, CURLOPT_PROXYPORT, 8080L);
+  // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
   curl_easy_setopt(curl, CURLOPT_HEADER, 1); // Used to write response header data back
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Binance::WriteCallback);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
   curl_easy_perform(curl);
+  curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code); 
+  curl_easy_cleanup(curl);
+  curl_global_cleanup();
 
   // Parse header dictionary
   // To be used to check current requests weight -> limit / minute
   hDictionary = this->parseHeaderData(readBuffer);
   
-  if (hDictionary.at(Binance::RESPONSE) == Binance::OK_RESPONSE){
+  if (http_code == Binance::OK_RESPONSE){
+    std::cout << "RESPONSE CODE: " << http_code << std::endl; 
+  }
+  if (hDictionary.at(Binance::RESPONSE) == Binance::OK_RESPONSE_STR){
+
     // Save data into csv file
-    this->saveCSVData(readBuffer);
+    if (this->allQueries()) {
+      std::cout << "HERE" << std::endl;
+      this->saveAllCoinsCSVData(readBuffer); 
+    } else {
+      this->saveCSVData(readBuffer);
+    }
+
+  } else {
+    std::this_thread::sleep_for(std::chrono::seconds(10));
+    std::cout << "Continuing" << std::endl; 
   }
   
   if (std::stoi(hDictionary.at(Binance::USED_WEIGHT)) > Binance::INTERVAL_LIMIT){
     // If limit is about to exceed -> send message to kill all requests
     std::cout << "Should send message to all threads to terminate" << std::endl; 
+  }
+}
+
+
+// saves data into csv file from all coins on binance
+void QueryCrypto::saveAllCoinsCSVData(std::string &readBuffer){
+
+  // Structure of response
+  // [{'symbol': 'LTCBTC', 'price': '0.00396400'}, {...}]
+
+  std::string::size_type index;
+  std::istringstream resp(readBuffer);
+
+  int comma_counter = 1; 
+  size_t pos = 0;
+  std::string token, row, columns, last_char, data;
+  std::string delimiter = "}";
+  bool lastColumn = false;
+  int c_loop = 0; // Used to count the colums of the data to query
+
+  while (std::getline(resp, data)) {
+    index = data.find('[', 0);
+    
+    if (index != std::string::npos) {
+      std::replace(data.begin(), data.end(), '[', ' ');
+      // Replace <[> with <}>, so that find method goes until last item
+      std::replace(data.begin(), data.end(), ']', '}');
+      // While delimiter is found
+      while ((pos = data.find(delimiter)) != std::string::npos) {
+
+        token = data.substr(0, pos);
+        // Check if we are in the last column
+        lastColumn = (token.find('}') != std::string::npos) ? true : false;
+
+        // Replace quotes with empty char
+        std::replace(token.begin(), token.end(), '"', ' ');
+        std::replace(token.begin(), token.end(), '{', ' ');
+
+
+
+        // If last column, get rid of curlybrackets
+        // if (lastColumn == true) {
+        //   std::replace(token.begin(), token.end(), '}', ' ');
+        // } else {
+        //   std::replace(token.begin(), token.end(), '{', ' ');
+        // }
+
+        // Split token into key/value
+        std::vector<std::string> splitString = Binance::split(token, ",");
+        data.erase(0, pos + delimiter.length());
+
+
+        // TODO: SIZE IS ZEROO HERE
+        std::cout << "Length: " << splitString.size() << std::endl; 
+        // std::cout << "First part: " << splitString[0] << std::endl; 
+        // std::cout << "Second part: " << splitString[1] << std::endl; 
+
+        // // Add column names to column string
+        // if (c_loop == 0) {
+        //   last_char = (lastColumn) ? "" : ";";
+        //   columns += splitString[0] + last_char;
+        //   // if (lastColumn) {
+        //   //   // Pass columns into text only if beginning of file
+        //   //   std::cout << columns << std::endl;
+        //   // }
+        // }
+
+        // // Add new columns to row string
+        // if (lastColumn) {
+        //   c_loop++;
+        //   row += splitString[1] + "\n";
+        //   // outfile << row;
+        //   row = "";
+        // } else {
+        //   row += splitString[1] + ";";
+        // }
+      }
+      std::cout << "Finished: " << token << std::endl; 
+      break;
+    }
   }
 }
 
@@ -145,7 +252,7 @@ QueryCrypto::parseHeaderData(std::string &readBuffer) {
     // If correct response return 200
     if (header.find(Binance::HTTP_RESPONSE) != std::string::npos) {
       headerDictionary.insert(
-          std::make_pair(Binance::RESPONSE, Binance::OK_RESPONSE));
+          std::make_pair(Binance::RESPONSE, Binance::OK_RESPONSE_STR));
       keys_counter++;
       found_response = true; 
     }
@@ -190,7 +297,7 @@ QueryCrypto::parseHeaderData(std::string &readBuffer) {
     if ( headerDictionary.find(Binance::USED_WEIGHT) == headerDictionary.end() ) {
       headerDictionary.insert(std::make_pair(Binance::USED_WEIGHT, Binance::BAD_RESPONSE));
     } 
-    
+
     std::cout << "Bad Response" << std::endl; 
   }
 
