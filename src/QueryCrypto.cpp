@@ -166,6 +166,7 @@ void QueryCrypto::saveData(std::vector<std::vector<std::string>> &chunkData){
 
   for (int k = 0; k < chunkData.size(); k++) {
     std::ofstream outfile;
+    std::remove(chunkData[k][0].begin(), chunkData[k][0].end(), ' ');; 
     std::string file_name = Binance::getCurrentDirectory() + "/data/" + chunkData[k][0] + ".csv";
     outfile.open(file_name, std::ios_base::app);
     outfile << chunkData[k][1] + ";" + chunkData[k][2] + "\n";

@@ -19,7 +19,6 @@ const std::string BAD_RESPONSE{"404"};
 const int INTERVAL_LIMIT(1100); 
 const int MAX_WORKER_SIZE(60); 
 const int MAX_WORKER_BATCH_SIZE(30); 
-
 const int KEY_COUNTER(3);
 const long OK_RESPONSE(200); 
 
