@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <map>
+#include <vector>
 
 /*
 Crypto currency query class declaration
@@ -20,6 +21,7 @@ public:
   // Data processing
   void saveCSVData(std::string &readBuffer); 
   void saveAllCoinsCSVData(std::string &readBuffer); 
+  void saveData(std::vector<std::vector<std::string>> &chunkData); 
   std::map<std::string, std::string> parseHeaderData(std::string &readBuffer); 
 
   // getters
