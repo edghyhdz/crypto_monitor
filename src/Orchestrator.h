@@ -30,6 +30,7 @@ private:
   std::shared_ptr<QueryCrypto> _allCryptos; 
   std::vector<std::thread> _threads;
   std::vector<std::thread> _threadCryptos;
+  std::string _currentDirectory; 
 };
 
 #endif
