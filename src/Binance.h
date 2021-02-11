@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <unistd.h>
 
 // Binance api end point definitions and utility methods
 namespace Binance {
@@ -16,8 +17,20 @@ const std::string RESPONSE{"Response"};
 const std::string OK_RESPONSE_STR{"200"};
 const std::string BAD_RESPONSE{"404"}; 
 const int INTERVAL_LIMIT(1100); 
-const long OK_RESPONSE(200); 
+const int MAX_WORKER_SIZE(60); 
+const int MAX_WORKER_BATCH_SIZE(30); 
+
 const int KEY_COUNTER(3);
+const long OK_RESPONSE(200); 
+
+// get current directory
+// reference https://www.daniweb.com/programming/software-development/threads/406729/current-directory
+std::string getCurrentDirectory(){
+  char strDir[129] = {0};
+  getcwd(strDir, 128);
+
+  return strDir; 
+}
 
 // Split
 // reference https://stackoverflow.com/a/14266139/13743493
