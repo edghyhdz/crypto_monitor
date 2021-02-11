@@ -149,9 +149,12 @@ void QueryCrypto::saveAllCoinsCSVData(std::string &readBuffer){
   currentTime = std::chrono::system_clock::now();
   for (int i = 0; i < allDataTest.size() ; i++) {
     // Each of these vectors are used to be saved in a thread
-    for (int j = 0; j < allDataTest[i].size(); j++) {
-      this->saveData(allDataTest[i]); 
-    }
+    this->saveData(allDataTest[i]);
+
+    // // If inside a thread
+    // for (int j = 0; j < allDataTest[i].size(); j++) {
+    //   // here goes thread
+    // }
   }
   long timeDifference = std::chrono::duration_cast<std::chrono::milliseconds>(
                             std::chrono::system_clock::now() - currentTime)

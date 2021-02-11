@@ -15,8 +15,8 @@ g++ -g src/QueryCrypto.cpp src/QueryCrypto.h src/Binance.h src/Orchestrator.cpp 
 
 Orchestrator::Orchestrator() {
   // TODO: Put this into a txt file
-  // std::vector<std::string> currencies{"REEFUSDT", "CHZUSDT", "MATICUSDT", "VETUSDT", "FETUSDT", "ZILUSDT", "RLCUSDT", "OCEANUSDT", "ATOMUSDT", "LUNAUSDT"};
-  std::vector<std::string> currencies{"BTCUSDT"};
+  std::vector<std::string> currencies{"REEFUSDT", "CHZUSDT", "MATICUSDT", "VETUSDT", "FETUSDT", "ZILUSDT", "RLCUSDT", "OCEANUSDT", "ATOMUSDT", "LUNAUSDT"};
+  // std::vector<std::string> currencies{"BTCUSDT"};
 
   int id_currency = 0;
 
