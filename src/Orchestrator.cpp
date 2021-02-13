@@ -24,13 +24,13 @@ Orchestrator::Orchestrator() {
   for (std::string coin : currencies) {
       std::cout << "Coin: " << coin << std::endl; 
     std::shared_ptr<QueryCrypto> crypto =
-        std::make_shared<QueryCrypto>(coin, ++id_currency, false);
+        std::make_shared<QueryCrypto>(coin, ++id_currency, false, 10);
     _cryptos.emplace_back(crypto);
   }
 
   // For querying all data from all coins on binance
   // TODO: Uncomment once finishing command window dashboard
-  _allCryptos = std::make_shared<QueryCrypto>("all", ALL_COINS_ID, true); 
+  _allCryptos = std::make_shared<QueryCrypto>("all", ALL_COINS_ID, true, 2); 
 
 }
 
