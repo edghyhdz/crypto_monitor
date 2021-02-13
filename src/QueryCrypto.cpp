@@ -19,7 +19,7 @@ void QueryCrypto::runSingleQueries() {
   std::cout << "Started querying: " << this->getCoinPair() << std::endl;
   while (true) {
     this->getData();
-    std::this_thread::sleep_for(std::chrono::seconds(10));
+    std::this_thread::sleep_for(std::chrono::seconds(this->_http_delay));
     // TODO: Cycle duration instead of sleep
   }
 }
@@ -58,16 +58,22 @@ void QueryCrypto::getData() {
   hDictionary = this->parseHeaderData(readBuffer);
   
   if (http_code == Binance::OK_RESPONSE){
-    std::cout << "RESPONSE CODE: " << http_code << std::endl; 
-  }
-  if (hDictionary.at(Binance::RESPONSE) == Binance::OK_RESPONSE_STR){
-
+    // std::cout << "RESPONSE CODE: " << http_code << std::endl; 
     // Save data into csv file
     if (this->allQueries()) {
       this->saveAllCoinsCSVData(readBuffer); 
     } else {
       this->saveCSVData(readBuffer);
     }
+  // }
+  // if (hDictionary.at(Binance::RESPONSE) == Binance::OK_RESPONSE_STR) {
+
+  //   // Save data into csv file
+  //   if (this->allQueries()) {
+  //     this->saveAllCoinsCSVData(readBuffer);
+  //   } else {
+  //     this->saveCSVData(readBuffer);
+  //   }
 
   } else {
     std::this_thread::sleep_for(std::chrono::seconds(10));
@@ -79,7 +85,6 @@ void QueryCrypto::getData() {
     std::cout << "Should send message to all threads to terminate" << std::endl; 
   }
 }
-
 
 // saves data into csv file from all coins on binance
 void QueryCrypto::saveAllCoinsCSVData(std::string &readBuffer){
@@ -160,9 +165,7 @@ void QueryCrypto::saveAllCoinsCSVData(std::string &readBuffer){
   long timeDifference = std::chrono::duration_cast<std::chrono::milliseconds>(
                             std::chrono::system_clock::now() - currentTime)
                             .count();
-
-  std::cout << "Took: " << timeDifference << " miliseconds to save without threads" << std::endl; 
-                    
+  // std::cout << "Took: " << timeDifference << " miliseconds to save without threads" << std::endl; 
 }
 
 // QueryCrypto::saveAllCoinsCSVData helper function
@@ -204,7 +207,7 @@ void QueryCrypto::saveData(std::vector<std::vector<std::string>> &chunkData){
             }
             line = ""; 
           }
-          if (row_counter >= 80) {
+          if (row_counter >= Binance::LIM_X_DASHBOARD) {
             break;
           }
       }
@@ -331,17 +334,17 @@ QueryCrypto::parseHeaderData(std::string &readBuffer) {
 
   }
 
-  try {
-    std::cout << "RESPONSE                : "
-              << headerDictionary.at(Binance::RESPONSE) << std::endl;
-    std::cout << "USED WEIGHT             : "
-              << headerDictionary.at(Binance::USED_WEIGHT) << std::endl;
-    std::cout << "USED WEIGHT / INTERVAL  : "
-              << headerDictionary.at(Binance::USED_WEIGHT_PER_INTERVAL)
-              << std::endl;
-  } catch (std::out_of_range) {
-    std::cout << "Out of range error" << std::endl;
-  }
+  // try {
+  //   std::cout << "RESPONSE                : "
+  //             << headerDictionary.at(Binance::RESPONSE) << std::endl;
+  //   std::cout << "USED WEIGHT             : "
+  //             << headerDictionary.at(Binance::USED_WEIGHT) << std::endl;
+  //   std::cout << "USED WEIGHT / INTERVAL  : "
+  //             << headerDictionary.at(Binance::USED_WEIGHT_PER_INTERVAL)
+  //             << std::endl;
+  // } catch (std::out_of_range) {
+  //   std::cout << "Out of range error" << std::endl;
+  // }
 
   // If no response was gotten 
   if (!found_response) {
