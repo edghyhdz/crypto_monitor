@@ -8,10 +8,11 @@
 #include <thread>
 #include <unistd.h>
 
+using std::ifstream; 
+
 /*
 QueryCrypto class definitions
 */
-
 
 // Run queries in a while loop
 void QueryCrypto::runSingleQueries() {
@@ -83,7 +84,7 @@ void QueryCrypto::getData() {
 // saves data into csv file from all coins on binance
 void QueryCrypto::saveAllCoinsCSVData(std::string &readBuffer){
 
-  // Structure of response
+  // Structure of json response
   // [{'symbol': 'LTCBTC', 'price': '0.00396400'}, {...}]
   std::vector<std::vector<std::string>> allData; 
   std::vector<std::vector<std::vector<std::string>>> allDataTest; 
@@ -153,7 +154,7 @@ void QueryCrypto::saveAllCoinsCSVData(std::string &readBuffer){
 
     // // If inside a thread
     // for (int j = 0; j < allDataTest[i].size(); j++) {
-    //   // here goes thread
+    //   // here goes thread code
     // }
   }
   long timeDifference = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -171,10 +172,45 @@ void QueryCrypto::saveData(std::vector<std::vector<std::string>> &chunkData){
     std::ofstream outfile;
     std::string coin_name = chunkData[k][0]; 
     std::remove(coin_name.begin(), coin_name.end(), ' ');
-    std::string file_name = Binance::getCurrentDirectory() + "/data/" + coin_name + ".csv";
+    std::string file_name = Binance::getCurrentDirectory() + "/data_test/" + coin_name + ".csv";
+
     outfile.open(file_name, std::ios_base::app);
-    outfile << chunkData[k][1] + ";" + chunkData[k][2] + "\n";
-    outfile.close(); 
+    outfile << chunkData[k][1] + ";" + chunkData[k][2] + "\n";   
+    outfile.close();
+
+    // If we need to read data out of it before closing
+    // Reads from bottom up, to read only interval that will be displayed in dashboard
+    if (coin_name == COIN_TO_PLOT) {
+      char c;
+      int row_counter = 0; 
+      std::vector<std::vector<std::string>> plotData; 
+      std::ifstream myFile(file_name, std::ios::ate);
+      std::streampos size = myFile.tellg();
+      std::string line = ""; 
+      // Read file from bottom up
+      // Help reference https://stackoverflow.com/a/27750629/13743493
+      for(int i=1; i<=size; i++){
+          myFile.seekg(-i, std::ios::end);
+          myFile.get(c);
+          if (c != '\n') {
+            line += c; 
+          }else{
+            row_counter++; 
+            // characters are read from right to left
+            std::reverse(line.begin(),line.end());
+            std::vector<std::string> time_price = Binance::split(line, ";"); 
+            if (time_price.size() > 1){
+              plotData.push_back(time_price); 
+            }
+            line = ""; 
+          }
+          if (row_counter >= 80) {
+            break;
+          }
+      }
+      this->setPlotData(plotData); 
+      myFile.close();
+    }
   }
 }
 
