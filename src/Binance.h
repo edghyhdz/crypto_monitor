@@ -20,6 +20,7 @@ const int INTERVAL_LIMIT(1100);
 const int MAX_WORKER_SIZE(60); 
 const int MAX_WORKER_BATCH_SIZE(30); 
 const int KEY_COUNTER(3);
+const int LIM_X_DASHBOARD(160); 
 const long OK_RESPONSE(200); 
 
 // get current directory
