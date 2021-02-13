@@ -3,6 +3,10 @@
 Based on script from the Udacity CppND from the system monitor project
 github repo -> https://github.com/udacity/CppND-System-Monitor
 
+Used snippets of code from flarn2006's cool repoo MiscPrograms graph.c and 
+modified it to suit this dashboard needs
+References https://github.com/flarn2006/MiscPrograms/blob/master/graph.c
+user -> flarn2006
 */
 
 #ifndef NCURSES_DISPLAY_H
@@ -14,11 +18,37 @@ github repo -> https://github.com/udacity/CppND-System-Monitor
 #include <string>
 #include <thread>
 
+#define XMIN 1
+#define XMAX 10
+#define YMIN  1
+#define YMAX 10
+#define XSCL .5
+#define YSCL .5
+
 namespace NCursesDisplay {void Display(int n);
-// void DisplayStats(WINDOW *window, bool &doorsAreOpen, int &waitingTime,
-//                    long &runSim, std::shared_ptr<WaitingArea> waitingArea);
-void DisplayPlot(WINDOW *window);
-// void DisplayAStarPath(WINDOW *window, int n, std::shared_ptr<WaitingArea> waitingArea, int agentNumber);
+
+typedef struct _viewwin viewwin;
+
+struct _viewwin {
+	double xmin, xmax;
+	double ymin, ymax;
+	double xscl, yscl;
+};
+
+/*  Start.
+    From this line onward code parts of code were taken/modified from 
+    flarn2006's cool repository
+*/
+double scale(double value, double omin, double omax, double nmin, double nmax); 
+void getViewStep(WINDOW *win, const viewwin *view, double *xstep, double *ystep);
+void DrawAxes(WINDOW *window, const viewwin *view); 
+void DrawGraph(WINDOW *window, const viewwin *view); 
+/*  Finished.
+    flarn2006's cool repo
+*/
+
+void DisplayPlot(WINDOW *window, std::vector<std::vector<std::string>> &plotData);
+void DisplayData(WINDOW *window, std::vector<std::vector<std::string>> &plotData);
 
 }; // namespace NCursesDisplay
 
