@@ -56,13 +56,8 @@ void NCursesDisplay::DrawAxes(WINDOW *window, const viewwin *view) {
   double xstep, ystep;
   getViewStep(window, view, &xstep, &ystep);
 
-  std::string middle = to_string(view->xmax / 2); 
-  std::string test = to_string(fabs(fmod(view->ymin + ystep * 6, view->yscl)) < ystep);
-  std::string step = to_string(ystep); 
-
   wattron(window, COLOR_PAIR(2));
   int i;
-
   for (i = 2; i <= xm - 2; i++) {
     double plotx = view->xmin + xstep * i;
     float abs_val = fabs(fmod(plotx, view->xscl)); 
@@ -80,6 +75,18 @@ void NCursesDisplay::DrawAxes(WINDOW *window, const viewwin *view) {
 
 }
 
+void getMaxMinValue(std::vector<double> data, double *value_x, double *value_y, double pct){
+  /*  Gets max and min values from a vector of doubles either containing
+      x or y series of data to plot
+  */
+  *value_x = *std::max_element(data.begin(), data.end());
+  *value_x = *value_x + *value_x * pct;
+
+  *value_y = *std::min_element(data.begin(), data.end());
+  *value_y = *value_y - *value_y * pct;
+}
+
+
 void NCursesDisplay::DrawGraph(WINDOW *window, const viewwin *view, std::vector<std::vector<std::string>> &plotData) {
   /* Draws a graph on the screen without axes.
      win              - ncurses window for drawing
@@ -89,61 +96,85 @@ void NCursesDisplay::DrawGraph(WINDOW *window, const viewwin *view, std::vector<
   */
   int xm, ym;
   getmaxyx(window, ym, xm);
-  double step;
-  getViewStep(window, view, &step, NULL);
-  double x;
-  char ch = '*';
-  for (double i = 2; i < 180; i++) {
+  char ch = 'o';
+  double max_p_range, min_p_range, max_ts_range, min_ts_range; 
+  double max_price, min_price; 
+  std::vector<double> price_data;
+  std::vector<double> time_stamps; 
+  if (plotData.size() > 0) {
+    for (int i = 0; i < plotData.size(); i++) {
+      price_data.push_back(stod(plotData[i][1]));
+      time_stamps.push_back(stol(plotData[i][0])); 
+    }
+    getMaxMinValue(price_data, &max_p_range, &min_p_range, PCTY); 
+    getMaxMinValue(time_stamps, &max_ts_range, &min_ts_range, PCTX); 
+    max_price = *std::max_element(price_data.begin(), price_data.end());
+    min_price = *std::min_element(price_data.begin(), price_data.end());
+  }
+
+
+  wattron(window, COLOR_PAIR(4));
+  std::reverse(plotData.begin(), plotData.end());
+  double last_price; 
+  for (int i = 0; i < plotData.size(); i++) {
     double xpd, ypd;
-    xpd = scale(i, 0, xm, 0, xm);
-    ypd = scale(i, 0, ym, ym, 0);
+    xpd = scale(stod(plotData[i][0]), min_ts_range, max_ts_range, 0, xm);
+    ypd = scale(stod(plotData[i][1]), min_p_range, max_p_range, ym, 0);
+
     xpd = (int)(xpd + 0.5 - (xpd < 0));
     ypd = (int)(ypd + 0.5 - (ypd < 0));
     mvwaddch(window, ypd, xpd, ch);
+
+    // Retrieve current price
+    if (i == plotData.size() - 1){
+      last_price = stod(plotData[i][1]); 
+    }
   }
+
+  wattroff(window, COLOR_PAIR(4));
+  wattron(window, COLOR_PAIR(4));
+  mvwprintw(window, 1, xm - 35, ("Max price     : " + to_string(max_price) + " USDT").c_str());
+  mvwprintw(window, 2, xm - 35, ("Min price     : " + to_string(min_price) + " USDT").c_str());
+  mvwprintw(window, 3, xm - 35, ("Current price : " + to_string(last_price) + " USDT").c_str());
+  wattroff(window, COLOR_PAIR(4));
 }
 /*  Finished.
     flarn2006's cool repo
 */
 
+// Reference https://stackoverflow.com/a/21303065/13743493
+std::string timeStampToHReadble(const time_t rawtime)
+{
+    struct tm * dt;
+    char buffer [30];
+    dt = localtime(&rawtime);
+    strftime(buffer, sizeof(buffer), "%H:%M:%S", dt);
+    return std::string(buffer);
+}
+
+
 // Updates every given amount of seconds
 void NCursesDisplay::DisplayData(WINDOW *window, std::vector<std::vector<std::string>> &plotData){
   int row_data{0};
   int column_data {5}; 
-  std::string y_axis = "*";
-  std::string x_axis = "*";
+
+  std::string column_names = "Time\t Price [USDT]"; 
+  wattron(window, COLOR_PAIR(7));
+  mvwprintw(window, ++row_data, column_data, column_names.c_str());
+  wattroff(window, COLOR_PAIR(7));
+
 
   // Start assuming there are no data holes
   for (int i = 0; i < plotData.size(); i++) {
-    std::string dataString = plotData[i][0] + ":" + plotData[i][1]; 
-    wattron(window, COLOR_PAIR(1));
+    std::string time_str = timeStampToHReadble(stol(plotData[i][0]) / 1000);
+    std::string dataString = time_str + "\t " + plotData[i][1]; 
+    wattron(window, COLOR_PAIR(4));
     mvwprintw(window, ++row_data, column_data, dataString.c_str());
-    wattroff(window, COLOR_PAIR(1));
-    if (i > 40){
+    wattroff(window, COLOR_PAIR(4));
+    if (i > 39){
       break; 
     }
   }
-}
-
-// Updates every given amount of seconds
-void NCursesDisplay::DisplayPlot(WINDOW *window, std::vector<std::vector<std::string>> &plotData){
-  int row{1};
-  int column{4}; 
-  std::string y_axis = "*";
-  std::string x_axis = "*";
-
-  for (int i = 0; i < 40; i++) {
-    wattron(window, COLOR_PAIR(2));
-    mvwprintw(window, ++row, column, y_axis.c_str());
-    wattroff(window, COLOR_PAIR(2));
-  }
-
-  for (int i = 0; i < 65; i++) {
-    wattron(window, COLOR_PAIR(2));
-    mvwprintw(window, row, ++++column, x_axis.c_str());
-    wattroff(window, COLOR_PAIR(2));
-  }
-
 }
 
 void NCursesDisplay::Display(int n) {
@@ -199,7 +230,6 @@ void NCursesDisplay::Display(int n) {
     box(plot_window, 0, 0);
     box(data_window, 0, 0);
     // DisplayHTTPStats(system_window, doorsAreOpen, waitingTime, runSim, waitingArea); 
-    // DisplayPlot(plot_window, plotData); 
     DisplayData(data_window, plotData); 
     DrawAxes(plot_window, &view);
     DrawGraph(plot_window, &view, plotData); 
