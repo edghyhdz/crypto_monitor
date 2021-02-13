@@ -8,6 +8,6 @@ g++ -g src/QueryCrypto.cpp src/QueryCrypto.h src/Binance.h src/Orchestrator.cpp 
 #include <thread>
 
 int main() {
-  int n = 40;
+  int n = 41;
   NCursesDisplay::Display(n);
 }
