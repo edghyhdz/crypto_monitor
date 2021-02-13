@@ -6,17 +6,18 @@
 #include <random>
 #include <thread>
 
+
 /*
 Orchestrator member attribute declarations
 
-g++ -g src/QueryCrypto.cpp src/QueryCrypto.h src/Binance.h src/Orchestrator.cpp src/Orchestrator.h -o run.out -lcurl -pthread
+g++ -g src/QueryCrypto.cpp src/QueryCrypto.h src/Binance.h src/Orchestrator.cpp src/Orchestrator.h -o run.TEST -lcurl -pthread
 
 */
 
 Orchestrator::Orchestrator() {
   // TODO: Put this into a txt file
-  std::vector<std::string> currencies{"REEFUSDT", "CHZUSDT", "MATICUSDT", "VETUSDT", "FETUSDT", "ZILUSDT", "RLCUSDT", "OCEANUSDT", "ATOMUSDT", "LUNAUSDT"};
-  // std::vector<std::string> currencies{"BTCUSDT"};
+  // std::vector<std::string> currencies{"REEFUSDT", "CHZUSDT", "MATICUSDT", "VETUSDT", "FETUSDT", "ZILUSDT", "RLCUSDT", "OCEANUSDT", "ATOMUSDT", "LUNAUSDT"};
+  std::vector<std::string> currencies{"BTCUSDT"};
 
   int id_currency = 0;
 
@@ -28,7 +29,8 @@ Orchestrator::Orchestrator() {
   }
 
   // For querying all data from all coins on binance
-  _allCryptos = std::make_shared<QueryCrypto>("all", ++id_currency, true); 
+  // TODO: Uncomment once finishing command window dashboard
+  _allCryptos = std::make_shared<QueryCrypto>("all", ALL_COINS_ID, true); 
 
 }
 
@@ -46,19 +48,23 @@ Orchestrator::~Orchestrator() {
 
 }
 
+std::vector<std::vector<std::string>> Orchestrator::getPlotData() {
+  return this->_allCryptos->getPlotData(); 
+}
+
 void Orchestrator::runQuery() {
   for (auto &c : _cryptos) {
     _threadCryptos.emplace_back(std::thread(&QueryCrypto::runSingleQueries, c));
   }
-
+  // TODO: Uncomment once finishing command window dashboard
   _threadCryptos.emplace_back(std::thread(&QueryCrypto::runSingleQueries, _allCryptos)); 
 
 }
 
-int main() {
-  Orchestrator orchestrator = Orchestrator();
-  orchestrator.runQuery();
-//   QueryCrypto crypto = QueryCrypto("BTCUSDT", 1);
-//   crypto.getData();
-  return 0;
-}
+// int main() {
+//   Orchestrator orchestrator = Orchestrator();
+//   orchestrator.runQuery();
+// //   QueryCrypto crypto = QueryCrypto("BTCUSDT", 1);
+// //   crypto.getData();
+//   return 0;
+// }
