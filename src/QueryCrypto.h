@@ -1,7 +1,7 @@
 #ifndef CRYPTO_H
 #define CRYPTO_H
 #define ALL_COINS_ID 205  // Generic all coins ID
-#define COIN_TO_PLOT "ENJUSDTT "
+#define COIN_TO_PLOT "ZILUSDTT "
 #include <string>
 #include <iostream>
 #include <map>
@@ -14,7 +14,7 @@ Crypto currency query class declaration
 class QueryCrypto {
 public:
   // Currency pair
-  QueryCrypto(std::string curPair, int id, bool allCoins) : _curPair(curPair), _id(id), _allCoins(allCoins) {};
+  QueryCrypto(std::string curPair, int id, bool allCoins, int delay) : _curPair(curPair), _id(id), _allCoins(allCoins), _http_delay(delay) {};
 
   // Making http request
   void getData(); 
@@ -43,6 +43,7 @@ private:
   static std::string _cointToPlot;                    // Coin to be plotted
   int _id; 
   bool _allCoins; 
+  int _http_delay;                                    // HTTP request cylce in seconds
 
 };
 
