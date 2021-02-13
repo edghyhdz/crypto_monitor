@@ -24,6 +24,8 @@ user -> flarn2006
 #define YMAX 10
 #define XSCL .5
 #define YSCL .5
+#define PCTX 0.00000001
+#define PCTY 0.015
 
 namespace NCursesDisplay {void Display(int n);
 
@@ -46,8 +48,6 @@ void DrawGraph(WINDOW *window, const viewwin *view, std::vector<std::vector<std:
 /*  Finished.
     flarn2006's cool repo
 */
-
-void DisplayPlot(WINDOW *window, std::vector<std::vector<std::string>> &plotData);
 void DisplayData(WINDOW *window, std::vector<std::vector<std::string>> &plotData);
 
 }; // namespace NCursesDisplay
