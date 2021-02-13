@@ -23,6 +23,8 @@ Orchestrator();
 // Reference: https://stackoverflow.com/a/23575458/13743493
 Orchestrator(Orchestrator &&o) = default;
 
+std::vector<std::vector<std::string>> getPlotData(); 
+
 void runQuery(); 
 
 private:
