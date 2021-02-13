@@ -80,29 +80,28 @@ void NCursesDisplay::DrawAxes(WINDOW *window, const viewwin *view) {
 
 }
 
-void NCursesDisplay::DrawGraph(WINDOW *window, const viewwin *view)
-{
-	/* Draws a graph on the screen without axes.
-	   win              - ncurses window for drawing
-	   view             - view parameters structure
-	   yfunc            - function to graph (function pointer)
-	   enableSlopeChars - whether or not to call slopeChar to determine characters
-	*/
-	int xm, ym; getmaxyx(window, ym, xm);
-	double step; getViewStep(window, view, &step, NULL);
-	double x; 
-  char ch = '*'; 
-  for (double i = 2; i < 180; i++){
+void NCursesDisplay::DrawGraph(WINDOW *window, const viewwin *view) {
+  /* Draws a graph on the screen without axes.
+     win              - ncurses window for drawing
+     view             - view parameters structure
+     yfunc            - function to graph (function pointer)
+     enableSlopeChars - whether or not to call slopeChar to determine characters
+  */
+  int xm, ym;
+  getmaxyx(window, ym, xm);
+  double step;
+  getViewStep(window, view, &step, NULL);
+  double x;
+  char ch = '*';
+  for (double i = 2; i < 180; i++) {
     int yp = scale(i, 0, ym, ym, 0);
-    int xp = scale(i, 0, xm, 0, xm); 
-    double xpd, ypd; 
+    int xp = scale(i, 0, xm, 0, xm);
+    double xpd, ypd;
     xpd = scale(i, 0, xm, 0, xm);
     ypd = scale(i, 0, ym, ym, 0);
-    xpd = (int)(xpd + 0.5 - (xpd<0)); 
-    ypd = (int)(ypd + 0.5 - (ypd<0)); 
-
-    std::string coords = to_string(xpd) + ", " +  to_string(ypd) + "int: " + to_string((int)xpd) + ", " + to_string((int)ypd); 
-    mvwaddch(window, ypd, xpd, ch); 
+    xpd = (int)(xpd + 0.5 - (xpd < 0));
+    ypd = (int)(ypd + 0.5 - (ypd < 0));
+    mvwaddch(window, ypd, xpd, ch);
   }
 }
 /*  Finished.
