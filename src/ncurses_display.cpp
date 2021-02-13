@@ -80,7 +80,7 @@ void NCursesDisplay::DrawAxes(WINDOW *window, const viewwin *view) {
 
 }
 
-void NCursesDisplay::DrawGraph(WINDOW *window, const viewwin *view) {
+void NCursesDisplay::DrawGraph(WINDOW *window, const viewwin *view, std::vector<std::vector<std::string>> &plotData) {
   /* Draws a graph on the screen without axes.
      win              - ncurses window for drawing
      view             - view parameters structure
@@ -94,8 +94,6 @@ void NCursesDisplay::DrawGraph(WINDOW *window, const viewwin *view) {
   double x;
   char ch = '*';
   for (double i = 2; i < 180; i++) {
-    int yp = scale(i, 0, ym, ym, 0);
-    int xp = scale(i, 0, xm, 0, xm);
     double xpd, ypd;
     xpd = scale(i, 0, xm, 0, xm);
     ypd = scale(i, 0, ym, ym, 0);
@@ -204,7 +202,7 @@ void NCursesDisplay::Display(int n) {
     // DisplayPlot(plot_window, plotData); 
     DisplayData(data_window, plotData); 
     DrawAxes(plot_window, &view);
-    DrawGraph(plot_window, &view); 
+    DrawGraph(plot_window, &view, plotData); 
     wrefresh(system_window);
     wrefresh(plot_window);
     wrefresh(data_window); 

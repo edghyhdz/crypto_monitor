@@ -42,7 +42,7 @@ struct _viewwin {
 double scale(double value, double omin, double omax, double nmin, double nmax); 
 void getViewStep(WINDOW *win, const viewwin *view, double *xstep, double *ystep);
 void DrawAxes(WINDOW *window, const viewwin *view); 
-void DrawGraph(WINDOW *window, const viewwin *view); 
+void DrawGraph(WINDOW *window, const viewwin *view, std::vector<std::vector<std::string>> &plotData); 
 /*  Finished.
     flarn2006's cool repo
 */
