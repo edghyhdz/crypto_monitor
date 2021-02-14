@@ -259,11 +259,11 @@ void NCursesDisplay::DrawGraph(WINDOW *window, const viewwin *view, std::vector<
   wattroff(window, COLOR_PAIR(4));
   wattron(window, COLOR_PAIR(4));
   wattron(window, A_BOLD);
-  mvwprintw(window, 1, 5, ("COIN: " + view->current_coin).c_str());
-  mvwprintw(window, 1, xm - 35, ("Current price : " + to_string(last_price) + " USDT").c_str());
+  mvwprintw(window, 1, xm - 35, ("COIN          : " + view->current_coin).c_str());
+  mvwprintw(window, 2, xm - 35, ("Current price : " + to_string(last_price) + " USDT").c_str());
   wattroff(window, A_BOLD);
-  mvwprintw(window, 2, xm - 35, ("Max price     : " + to_string(max_price) + " USDT").c_str());
-  mvwprintw(window, 3, xm - 35, ("Min price     : " + to_string(min_price) + " USDT").c_str());
+  mvwprintw(window, 3, xm - 35, ("Max price     : " + to_string(max_price) + " USDT").c_str());
+  mvwprintw(window, 4, xm - 35, ("Min price     : " + to_string(min_price) + " USDT").c_str());
   wattroff(window, COLOR_PAIR(4));
 }
 /*  Finished.
@@ -285,12 +285,18 @@ std::string timeStampToHReadble(const time_t rawtime)
 void NCursesDisplay::DisplayData(WINDOW *window, std::vector<std::vector<std::string>> &plotData){
   int row_data{0};
   int column_data {5}; 
-
   std::string column_names = "Time\t Price [USDT]"; 
-  wattron(window, COLOR_PAIR(7));
+  wattron(window, A_BOLD);
+  wattron(window, COLOR_PAIR(4));
   mvwprintw(window, ++row_data, column_data, column_names.c_str());
-  wattroff(window, COLOR_PAIR(7));
+  wattroff(window, COLOR_PAIR(4));
+  wattroff(window, A_BOLD);
 
+  // Horizontal line to divide col names with price data
+  ++row_data;
+  for (int k = 5; k < window->_maxx - 5; k++) {
+    mvwaddch(window, row_data, k, ACS_HLINE);
+  }
   // Start assuming there are no data holes
   for (int i = 0; i < plotData.size(); i++) {
     std::string time_str = timeStampToHReadble(stol(plotData[i][0]) / 1000);
@@ -298,7 +304,9 @@ void NCursesDisplay::DisplayData(WINDOW *window, std::vector<std::vector<std::st
     wattron(window, COLOR_PAIR(4));
     mvwprintw(window, ++row_data, column_data, dataString.c_str());
     wattroff(window, COLOR_PAIR(4));
-    if (i > window->_maxx){
+    // Vertical line dividing time stamps with price data
+    mvwaddch(window, row_data, (window->_maxx / 2) - 2, ACS_VLINE);
+    if (i > window->_maxx + 3){
       break; 
     }
   }
@@ -318,6 +326,7 @@ void NCursesDisplay::Display(int n) {
   // Start http requests
   Orchestrator orchestrator = Orchestrator();
   orchestrator.runQuery();
+  orchestrator.setCoinToPlot(COIN_TO_PLOT);
   
   // Send keys timeout
   keypad(system_window, true);
@@ -335,21 +344,10 @@ void NCursesDisplay::Display(int n) {
     switch(wgetch(system_window)){
       case 'w':
       editViewWindow(&view);
+      orchestrator.setCoinToPlot(view.current_coin);
       break;
     }
-
-    // switch (wgetch(system_window)) {
-    // case KEY_F0 + 1:
-    //   agentNumber += (agentNumber < (maxAgentNumber - 1)) ? 1 : -agentNumber;
-    //   break;
-    // case KEY_F0 + 2:
-    //   agentNumber -= (agentNumber > 0) ? 1 : -(maxAgentNumber - 1);
-    //   break;
-    // }
-    // int key = getch();
-    // if (key == 'w') editViewWindow(&view);
     std::vector<std::vector<std::string>> plotData = orchestrator.getPlotData();
-
     init_pair(1, COLOR_BLUE, COLOR_BLACK);
     init_pair(2, COLOR_GREEN, COLOR_BLACK);
     init_pair(3, COLOR_RED, COLOR_BLACK);
@@ -370,6 +368,7 @@ void NCursesDisplay::Display(int n) {
     DisplayData(data_window, plotData); 
     DrawAxes(plot_window, &view);
     DrawGraph(plot_window, &view, plotData); 
+    mvwprintw(system_window, 0, 0, orchestrator.getCoinToPlot().c_str());
     wrefresh(system_window);
     wrefresh(plot_window);
     wrefresh(data_window); 
