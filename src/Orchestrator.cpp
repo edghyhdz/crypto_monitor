@@ -61,6 +61,16 @@ void Orchestrator::runQuery() {
 
 }
 
+void Orchestrator::setCoinToPlot(std::string coinToPlot) {
+  /*Sets coin to plot into shared_ptr allCrypto vector*/
+
+  _allCryptos->setCoinToPlot(coinToPlot); 
+}
+
+std::string Orchestrator::getCoinToPlot(){
+  return _allCryptos->getCoinToPlot(); 
+}
+
 // int main() {
 //   Orchestrator orchestrator = Orchestrator();
 //   orchestrator.runQuery();
