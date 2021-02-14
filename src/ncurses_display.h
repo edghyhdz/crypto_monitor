@@ -26,15 +26,26 @@ user -> flarn2006
 #define YSCL .5
 #define PCTX 0.00000001
 #define PCTY 0.015
+#define COIN_TO_PLOT "ATOMUSDTT "
+#define FIELD_MAX_CHARS 32
 
 namespace NCursesDisplay {void Display(int n);
 
 typedef struct _viewwin viewwin;
+typedef struct _khdata khdata;
+typedef void (*key_handler)(int key, khdata *data);
 
 struct _viewwin {
 	double xmin, xmax;
 	double ymin, ymax;
 	double xscl, yscl;
+    std::string current_coin = COIN_TO_PLOT; 
+};
+
+struct _khdata {
+	/* Struct for pointers to data that key handlers may need to access */
+	viewwin *view;
+	double *trace;
 };
 
 /*  Start.
@@ -45,6 +56,8 @@ double scale(double value, double omin, double omax, double nmin, double nmax);
 void getViewStep(WINDOW *win, const viewwin *view, double *xstep, double *ystep);
 void DrawAxes(WINDOW *window, const viewwin *view); 
 void DrawGraph(WINDOW *window, const viewwin *view, std::vector<std::vector<std::string>> &plotData); 
+void defaultKeyHandler(int key, khdata *data);
+int editViewWindow(viewwin *view); 
 /*  Finished.
     flarn2006's cool repo
 */
