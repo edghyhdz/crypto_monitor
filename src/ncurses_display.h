@@ -26,7 +26,7 @@ user -> flarn2006
 #define YSCL .5
 #define PCTX 0.00000001
 #define PCTY 0.015
-#define COIN_TO_PLOT "ATOMUSDTT "
+#define COIN_TO_PLOT "CHZUSDTT"
 #define FIELD_MAX_CHARS 32
 
 namespace NCursesDisplay {void Display(int n);
