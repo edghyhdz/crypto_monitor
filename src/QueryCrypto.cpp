@@ -183,7 +183,7 @@ void QueryCrypto::saveData(std::vector<std::vector<std::string>> &chunkData){
 
     // If we need to read data out of it before closing
     // Reads from bottom up, to read only interval that will be displayed in dashboard
-    if (coin_name == COIN_TO_PLOT) {
+    if (coin_name == getCoinToPlot()){
       char c;
       int row_counter = 0; 
       std::vector<std::vector<std::string>> plotData; 
@@ -284,8 +284,7 @@ void QueryCrypto::saveCSVData(std::string &readBuffer) {
   }
 }
 
-std::map<std::string, std::string>
-QueryCrypto::parseHeaderData(std::string &readBuffer) {
+std::map<std::string, std::string> QueryCrypto::parseHeaderData(std::string &readBuffer) {
   std::map<std::string, std::string> headerDictionary;
   std::istringstream resp(readBuffer);
   std::string header;
@@ -334,18 +333,6 @@ QueryCrypto::parseHeaderData(std::string &readBuffer) {
 
   }
 
-  // try {
-  //   std::cout << "RESPONSE                : "
-  //             << headerDictionary.at(Binance::RESPONSE) << std::endl;
-  //   std::cout << "USED WEIGHT             : "
-  //             << headerDictionary.at(Binance::USED_WEIGHT) << std::endl;
-  //   std::cout << "USED WEIGHT / INTERVAL  : "
-  //             << headerDictionary.at(Binance::USED_WEIGHT_PER_INTERVAL)
-  //             << std::endl;
-  // } catch (std::out_of_range) {
-  //   std::cout << "Out of range error" << std::endl;
-  // }
-
   // If no response was gotten 
   if (!found_response) {
     headerDictionary.insert(std::make_pair(Binance::RESPONSE, Binance::BAD_RESPONSE));
@@ -354,13 +341,30 @@ QueryCrypto::parseHeaderData(std::string &readBuffer) {
     if ( headerDictionary.find(Binance::USED_WEIGHT) == headerDictionary.end() ) {
       headerDictionary.insert(std::make_pair(Binance::USED_WEIGHT, Binance::BAD_RESPONSE));
     } 
-
     std::cout << "Bad Response" << std::endl; 
   }
 
   return headerDictionary;
 }
 
+void QueryCrypto::setCoinToPlot(std::string coinToPlot) {
+  /*
+  Sets coin to be plotted into terminal dashboard
+  coinToPlot            - Coin to be plotted
+  */
+  std::lock_guard<std::mutex> lock(_mutex);
+  coinToPlot.erase(remove(coinToPlot.begin(), coinToPlot.end(), ' '), coinToPlot.end());
+  this->_cointToPlot = coinToPlot + " ";
+}
+
+std::string QueryCrypto::getCoinToPlot() {
+  /*
+  Gets coin to be plotted into terminal dashboard
+  */
+  std::lock_guard<std::mutex> lock(_mutex);
+  if (!this->_cointToPlot.empty()) return _cointToPlot;
+  return "ZILUSDTT " ;
+}
 
 // Test function
 // int main() {
