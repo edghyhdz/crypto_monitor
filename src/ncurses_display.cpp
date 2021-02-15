@@ -312,6 +312,19 @@ void NCursesDisplay::DisplayData(WINDOW *window, std::vector<std::vector<std::st
   }
 }
 
+void NCursesDisplay::DisplayHTTPStats(WINDOW *window, int requestWeight) {
+  int row{0};
+  int column {5}; 
+  wattron(window, A_BOLD);
+  wattron(window, COLOR_PAIR(4));
+  std::string title = "Current request weight:";
+  mvwprintw(window, 3, window->_maxx - 25, title.c_str());
+  mvwprintw(window, 4, window->_maxx - 25, (to_string(requestWeight) + "/1200/min").c_str()); 
+  wattroff(window, COLOR_PAIR(4));
+  wattroff(window, A_BOLD);
+
+}
+
 void NCursesDisplay::Display(int n) {
   initscr();      // start ncurses
   noecho();       // do not print input values
@@ -347,6 +360,7 @@ void NCursesDisplay::Display(int n) {
       orchestrator.setCoinToPlot(view.current_coin);
       break;
     }
+    int requestWeight = orchestrator.getCurrentWeightRequest(); 
     std::vector<std::vector<std::string>> plotData = orchestrator.getPlotData();
     init_pair(1, COLOR_BLUE, COLOR_BLACK);
     init_pair(2, COLOR_GREEN, COLOR_BLACK);
@@ -364,7 +378,7 @@ void NCursesDisplay::Display(int n) {
     box(system_window, 0, 0);
     box(plot_window, 0, 0);
     box(data_window, 0, 0);
-    // DisplayHTTPStats(system_window, doorsAreOpen, waitingTime, runSim, waitingArea); 
+    DisplayHTTPStats(system_window, requestWeight);
     DisplayData(data_window, plotData); 
     DrawAxes(plot_window, &view);
     DrawGraph(plot_window, &view, plotData); 
