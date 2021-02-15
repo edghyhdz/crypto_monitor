@@ -54,6 +54,7 @@ struct _khdata {
 */
 double scale(double value, double omin, double omax, double nmin, double nmax); 
 void getViewStep(WINDOW *win, const viewwin *view, double *xstep, double *ystep);
+void DisplayHTTPStats(WINDOW *window, int requestWeight); 
 void DrawAxes(WINDOW *window, const viewwin *view); 
 void DrawGraph(WINDOW *window, const viewwin *view, std::vector<std::vector<std::string>> &plotData); 
 void defaultKeyHandler(int key, khdata *data);
