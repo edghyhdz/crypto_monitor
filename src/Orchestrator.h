@@ -26,6 +26,7 @@ Orchestrator(Orchestrator &&o) = default;
 std::vector<std::vector<std::string>> getPlotData(); 
 void setCoinToPlot(std::string coinToPlot);
 std::string getCoinToPlot();
+int getCurrentWeightRequest(); 
 
 void runQuery(); 
 
