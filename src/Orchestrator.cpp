@@ -71,10 +71,6 @@ std::string Orchestrator::getCoinToPlot(){
   return _allCryptos->getCoinToPlot(); 
 }
 
-// int main() {
-//   Orchestrator orchestrator = Orchestrator();
-//   orchestrator.runQuery();
-// //   QueryCrypto crypto = QueryCrypto("BTCUSDT", 1);
-// //   crypto.getData();
-//   return 0;
-// }
+int Orchestrator::getCurrentWeightRequest(){
+  return _allCryptos->getCurrentWeightRequest();
+}
