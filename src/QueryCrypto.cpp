@@ -14,6 +14,8 @@ using std::ifstream;
 QueryCrypto class definitions
 */
 
+std::vector<int> QueryCrypto::_requestWeight;
+
 // Run queries in a while loop
 void QueryCrypto::runSingleQueries() {
   std::cout << "Started querying: " << this->getCoinPair() << std::endl;
@@ -58,22 +60,16 @@ void QueryCrypto::getData() {
   hDictionary = this->parseHeaderData(readBuffer);
   
   if (http_code == Binance::OK_RESPONSE){
-    // std::cout << "RESPONSE CODE: " << http_code << std::endl; 
+
+    // Add request to request vector
+    this->addRequestWeight(hDictionary.at(Binance::USED_WEIGHT)); 
+
     // Save data into csv file
     if (this->allQueries()) {
       this->saveAllCoinsCSVData(readBuffer); 
     } else {
       this->saveCSVData(readBuffer);
     }
-  // }
-  // if (hDictionary.at(Binance::RESPONSE) == Binance::OK_RESPONSE_STR) {
-
-  //   // Save data into csv file
-  //   if (this->allQueries()) {
-  //     this->saveAllCoinsCSVData(readBuffer);
-  //   } else {
-  //     this->saveCSVData(readBuffer);
-  //   }
 
   } else {
     std::this_thread::sleep_for(std::chrono::seconds(10));
@@ -366,9 +362,26 @@ std::string QueryCrypto::getCoinToPlot() {
   return "ZILUSDTT " ;
 }
 
-// Test function
-// int main() {
-//   QueryCrypto crypto = QueryCrypto("BTCUSDT", 1);
-//   crypto.getData();
-//   return 0;
-// }
+void QueryCrypto::addRequestWeight(std::string requestWeight) {
+  /*  Saves current request weight into a matrix, this matrix will later be used
+     to get the max value of current request weight for a given time interval ->
+     following binance api endpoin tlimits
+  */
+  std::lock_guard<std::mutex> lock(_mutex);
+  this->_requestWeight.push_back(stoi(requestWeight));
+
+  // Avoid that vector surpasses a certain vector size
+  // pops back last item in the vector
+  if (this->_requestWeight.size() > 10) {
+    this->_requestWeight.erase(_requestWeight.begin());
+  }
+}
+
+int QueryCrypto::getCurrentWeightRequest() {
+  /*  Get maximum value of weight request, which will correspond
+      to the current request weight
+  */
+  std::lock_guard<std::mutex> lock(_mutex);
+  if (_requestWeight.size()==0) return 0;
+  return _requestWeight.at(_requestWeight.size() - 1); 
+}

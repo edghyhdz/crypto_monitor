@@ -29,8 +29,10 @@ public:
   // setters
   void setCoinToPlot(std::string coinToPlot);
   void setPlotData(std::vector<std::vector<std::string>> &plotData) { _plotData = plotData; }
+  void addRequestWeight(std::string requestWeight); 
   // getters
   int getID() { return _id; }
+  int getCurrentWeightRequest(); 
   std::vector<std::vector<std::string>> getPlotData() { return _plotData; }
   std::string getCoinPair(){ return _curPair; }
   std::string getCoinToPlot();
@@ -40,12 +42,12 @@ private:
   std::string _curPair;                               // crypto currency pair i.e., BTC/USD
   std::string _currentWeight;                         // Get info about current interval weight
   std::vector<std::vector<std::string>> _plotData;    // Data to plot into dashboard
-  std::string _cointToPlot;                    // Coin to be plotted
+  std::string _cointToPlot;                           // Coin to be plotted
   int _id; 
   bool _allCoins; 
   int _http_delay;                                    // HTTP request cylce in seconds
-  std::mutex _mutex; 
-
+  std::mutex _mutex;                                  // Lock certain shared resources
+  static std::vector<int> _requestWeight;             // Vector containing current request weight for given interval
 };
 
 #endif
