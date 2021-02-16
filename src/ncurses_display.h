@@ -27,6 +27,7 @@ user -> flarn2006
 #define PCTX 0.00000001
 #define PCTY 0.015
 #define COIN_TO_PLOT "CHZUSDTT"
+#define COIN_TO_PLOT_SECOND "ENJUSDTT"
 #define FIELD_MAX_CHARS 32
 
 namespace NCursesDisplay {void Display(int n);
@@ -39,7 +40,10 @@ struct _viewwin {
 	double xmin, xmax;
 	double ymin, ymax;
 	double xscl, yscl;
-    std::string current_coin = COIN_TO_PLOT; 
+    std::string first_coin = COIN_TO_PLOT;
+	std::string secondary_coin ;  
+	std::string third_coin;
+	bool plot_all;  
 };
 
 struct _khdata {
@@ -56,7 +60,8 @@ double scale(double value, double omin, double omax, double nmin, double nmax);
 void getViewStep(WINDOW *win, const viewwin *view, double *xstep, double *ystep);
 void DisplayHTTPStats(WINDOW *window, int requestWeight); 
 void DrawAxes(WINDOW *window, const viewwin *view); 
-void DrawGraph(WINDOW *window, const viewwin *view, std::vector<std::vector<std::string>> &plotData); 
+void DrawGraph(WINDOW *window, const viewwin *view, std::vector<std::vector<std::vector<std::string>>> &plotData);
+void DrawSubPlot(WINDOW *window, std::vector<std::vector<std::string>> &plotData, char ch, int color, std::string coin_name, int x_offset); 
 void defaultKeyHandler(int key, khdata *data);
 int editViewWindow(viewwin *view); 
 /*  Finished.
