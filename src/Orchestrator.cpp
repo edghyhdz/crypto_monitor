@@ -48,9 +48,9 @@ Orchestrator::~Orchestrator() {
 
 }
 
-std::vector<std::vector<std::string>> Orchestrator::getPlotData() {
-  return this->_allCryptos->getPlotData(); 
-}
+// std::vector<std::vector<std::string>> Orchestrator::getPlotData() {
+//   return this->_allCryptos->getPlotData(); 
+// }
 
 void Orchestrator::runQuery() {
   for (auto &c : _cryptos) {
@@ -61,16 +61,30 @@ void Orchestrator::runQuery() {
 
 }
 
-void Orchestrator::setCoinToPlot(std::string coinToPlot) {
-  /*Sets coin to plot into shared_ptr allCrypto vector*/
 
-  _allCryptos->setCoinToPlot(coinToPlot); 
+// TODO: Remove -> deprecated
+// void Orchestrator::setCoinToPlot(std::string coinToPlot) {
+//   /*Sets coin to plot into shared_ptr allCrypto vector*/
+//   _allCryptos->setCoinToPlot(coinToPlot); 
+// }
+
+void Orchestrator::setCoinsToPlot(std::vector<std::string> coinsToPlot){
+  _allCryptos->setCoinsToPlot(coinsToPlot); 
 }
 
-std::string Orchestrator::getCoinToPlot(){
-  return _allCryptos->getCoinToPlot(); 
+std::vector<std::vector<std::vector<std::string>>> Orchestrator::getAllPlotData() {
+  return this->_allCryptos->getAllPlotData(); 
 }
+
+std::vector<std::string>Orchestrator::getCoinsToPlot(){
+  return _allCryptos->getCoinsToPlot(); 
+}
+
+// std::string Orchestrator::getCoinToPlot(){
+//   return _allCryptos->getCoinToPlot(); 
+// }
 
 int Orchestrator::getCurrentWeightRequest(){
   return _allCryptos->getCurrentWeightRequest();
 }
+
