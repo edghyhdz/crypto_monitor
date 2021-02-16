@@ -149,15 +149,28 @@ void QueryCrypto::saveAllCoinsCSVData(std::string &readBuffer){
   // Save all the data
   std::chrono::time_point<std::chrono::system_clock> currentTime;
   currentTime = std::chrono::system_clock::now();
+  std::vector<std::string> allCoins = this->getCoinsToPlot(); 
+  std::vector<std::vector<std::vector<std::string>>> allPlotData;
+
+  // Initialize vector with size of allCoins
+  // This way, position of coins from gui will remain equal here
+  // for Coin 1, Coin 2, etc...
+  for (int k = 0; k < allCoins.size(); k++){
+    allPlotData.push_back({}); 
+  }
+
   for (int i = 0; i < allDataTest.size() ; i++) {
     // Each of these vectors are used to be saved in a thread
-    this->saveData(allDataTest[i]);
+    this->saveData(allDataTest[i], &allPlotData);
 
     // // If inside a thread
     // for (int j = 0; j < allDataTest[i].size(); j++) {
     //   // here goes thread code
     // }
   }
+  // Setting plot data for all currencies
+  this->setAllPlotData(allPlotData);
+
   long timeDifference = std::chrono::duration_cast<std::chrono::milliseconds>(
                             std::chrono::system_clock::now() - currentTime)
                             .count();
@@ -165,7 +178,11 @@ void QueryCrypto::saveAllCoinsCSVData(std::string &readBuffer){
 }
 
 // QueryCrypto::saveAllCoinsCSVData helper function
-void QueryCrypto::saveData(std::vector<std::vector<std::string>> &chunkData){
+void QueryCrypto::saveData(std::vector<std::vector<std::string>> &chunkData, std::vector<std::vector<std::vector<std::string>>> *allPlotData){
+// void QueryCrypto::saveData(std::vector<std::vector<std::string>> &chunkData){
+
+  // Vector to have all plot data from all coins to fetch
+  std::vector<std::string> allCoins = this->getCoinsToPlot(); 
 
   for (int k = 0; k < chunkData.size(); k++) {
     std::ofstream outfile;
@@ -177,40 +194,51 @@ void QueryCrypto::saveData(std::vector<std::vector<std::string>> &chunkData){
     outfile << chunkData[k][1] + ";" + chunkData[k][2] + "\n";   
     outfile.close();
 
-    // If we need to read data out of it before closing
-    // Reads from bottom up, to read only interval that will be displayed in dashboard
-    if (coin_name == getCoinToPlot()){
-      char c;
-      int row_counter = 0; 
-      std::vector<std::vector<std::string>> plotData; 
-      std::ifstream myFile(file_name, std::ios::ate);
-      std::streampos size = myFile.tellg();
-      std::string line = ""; 
-      // Read file from bottom up
-      // Help reference https://stackoverflow.com/a/27750629/13743493
-      for(int i=1; i<=size; i++){
-          myFile.seekg(-i, std::ios::end);
-          myFile.get(c);
-          if (c != '\n') {
-            line += c; 
-          }else{
-            row_counter++; 
-            // characters are read from right to left
-            std::reverse(line.begin(),line.end());
-            std::vector<std::string> time_price = Binance::split(line, ";"); 
-            if (time_price.size() > 1){
-              plotData.push_back(time_price); 
-            }
-            line = ""; 
-          }
-          if (row_counter >= Binance::LIM_X_DASHBOARD) {
-            break;
-          }
+    // New implementation
+    if (allCoins.size()>0){
+      // If coin was found
+      if (std::find(allCoins.begin(), allCoins.end(), coin_name) != allCoins.end()){
+        ptrdiff_t pos = distance(allCoins.begin(), find(allCoins.begin(), allCoins.end(), coin_name)); 
+        this->parsePlotData(file_name, allPlotData, pos);
       }
-      this->setPlotData(plotData); 
-      myFile.close();
     }
   }
+}
+
+void QueryCrypto::parsePlotData(std::string file_name, std::vector<std::vector<std::vector<std::string>>> *allPlotData, ptrdiff_t pos) {
+  /*  Helper function to parse data from txt file
+      file_name     - path to file with coin data
+  */
+
+  char c;
+  int row_counter = 0;
+  std::vector<std::vector<std::string>> plotData;
+  std::ifstream myFile(file_name, std::ios::ate);
+  std::streampos size = myFile.tellg();
+  std::string line = "";
+  // Read file from bottom up
+  // Help reference https://stackoverflow.com/a/27750629/13743493
+  for (int i = 1; i <= size; i++) {
+    myFile.seekg(-i, std::ios::end);
+    myFile.get(c);
+    if (c != '\n') {
+      line += c;
+    } else {
+      row_counter++;
+      // characters are read from right to left
+      std::reverse(line.begin(), line.end());
+      std::vector<std::string> time_price = Binance::split(line, ";");
+      if (time_price.size() > 1) {
+        plotData.push_back(time_price);
+      }
+      line = "";
+    }
+    if (row_counter >= Binance::LIM_X_DASHBOARD) {
+      break;
+    }
+  }
+  (*allPlotData)[pos] = plotData;
+  myFile.close();
 }
 
 // Saves queried data into csv file
@@ -343,25 +371,6 @@ std::map<std::string, std::string> QueryCrypto::parseHeaderData(std::string &rea
   return headerDictionary;
 }
 
-void QueryCrypto::setCoinToPlot(std::string coinToPlot) {
-  /*
-  Sets coin to be plotted into terminal dashboard
-  coinToPlot            - Coin to be plotted
-  */
-  std::lock_guard<std::mutex> lock(_mutex);
-  coinToPlot.erase(remove(coinToPlot.begin(), coinToPlot.end(), ' '), coinToPlot.end());
-  this->_cointToPlot = coinToPlot + " ";
-}
-
-std::string QueryCrypto::getCoinToPlot() {
-  /*
-  Gets coin to be plotted into terminal dashboard
-  */
-  std::lock_guard<std::mutex> lock(_mutex);
-  if (!this->_cointToPlot.empty()) return _cointToPlot;
-  return "ZILUSDTT " ;
-}
-
 void QueryCrypto::addRequestWeight(std::string requestWeight) {
   /*  Saves current request weight into a matrix, this matrix will later be used
      to get the max value of current request weight for a given time interval ->
@@ -384,4 +393,23 @@ int QueryCrypto::getCurrentWeightRequest() {
   std::lock_guard<std::mutex> lock(_mutex);
   if (_requestWeight.size()==0) return 0;
   return _requestWeight.at(_requestWeight.size() - 1); 
+}
+
+void QueryCrypto::setCoinsToPlot(std::vector<std::string> coinsToPlot){
+  std::lock_guard<std::mutex> lock(_mutex);
+  this->_coinsToPlot.clear(); 
+  for (std::string &coin : coinsToPlot){
+    coin.erase(remove(coin.begin(), coin.end(), ' '), coin.end());
+    coin = coin + " "; 
+    this->_coinsToPlot.push_back(coin); 
+  }
+}
+
+std::vector<std::string> QueryCrypto::getCoinsToPlot() {
+  /*
+  Gets coin to be plotted into terminal dashboard
+  */
+  std::lock_guard<std::mutex> lock(_mutex);
+  if (this->_coinsToPlot.size()>0) return _coinsToPlot; 
+  return {"ZILUSDTT ", "ENJUSDTT "} ;
 }
