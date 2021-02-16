@@ -23,26 +23,32 @@ public:
   // Data processing
   void saveCSVData(std::string &readBuffer); 
   void saveAllCoinsCSVData(std::string &readBuffer); 
-  void saveData(std::vector<std::vector<std::string>> &chunkData); 
+  // void saveData(std::vector<std::vector<std::string>> &chunkData); 
+  void saveData(std::vector<std::vector<std::string>> &chunkData, std::vector<std::vector<std::vector<std::string>>> *allPlotData); 
   std::map<std::string, std::string> parseHeaderData(std::string &readBuffer); 
 
   // setters
-  void setCoinToPlot(std::string coinToPlot);
-  void setPlotData(std::vector<std::vector<std::string>> &plotData) { _plotData = plotData; }
+  void setCoinsToPlot(std::vector<std::string> coinsToPlot); 
+  void setAllPlotData(std::vector<std::vector<std::vector<std::string>>> &plotData) { _plotDataVector = plotData; }
+  std::vector<std::vector<std::vector<std::string>>> getAllPlotData() {return _plotDataVector; }
+  std::vector<std::string> getCoinsToPlot(); 
+
   void addRequestWeight(std::string requestWeight); 
   // getters
   int getID() { return _id; }
   int getCurrentWeightRequest(); 
-  std::vector<std::vector<std::string>> getPlotData() { return _plotData; }
   std::string getCoinPair(){ return _curPair; }
   std::string getCoinToPlot();
   bool allQueries(){ return _allCoins; }
+  void parsePlotData(std::string file_name, std::vector<std::vector<std::vector<std::string>>> *plotData, ptrdiff_t pos); 
 
 private:
   std::string _curPair;                               // crypto currency pair i.e., BTC/USD
   std::string _currentWeight;                         // Get info about current interval weight
   std::vector<std::vector<std::string>> _plotData;    // Data to plot into dashboard
+  std::vector<std::vector<std::vector<std::string>>> _plotDataVector;
   std::string _cointToPlot;                           // Coin to be plotted
+  std::vector<std::string> _coinsToPlot;              // Vector containing all coins to plot
   int _id; 
   bool _allCoins; 
   int _http_delay;                                    // HTTP request cylce in seconds
