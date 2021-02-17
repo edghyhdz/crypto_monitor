@@ -29,8 +29,8 @@ public:
 
   // setters
   void setCoinsToPlot(std::vector<std::string> coinsToPlot); 
-  void setAllPlotData(std::vector<std::vector<std::vector<std::string>>> &plotData) { _plotDataVector = plotData; }
-  std::vector<std::vector<std::vector<std::string>>> getAllPlotData() {return _plotDataVector; }
+  void setAllPlotData(std::vector<std::vector<std::vector<std::string>>> &plotData) { _plotData = plotData; }
+  std::vector<std::vector<std::vector<std::string>>> getAllPlotData() {return _plotData; }
   std::vector<std::string> getCoinsToPlot(); 
 
   void addRequestWeight(std::string requestWeight); 
@@ -43,17 +43,16 @@ public:
   void parsePlotData(std::string file_name, std::vector<std::vector<std::vector<std::string>>> *plotData, ptrdiff_t pos); 
 
 private:
-  std::string _curPair;                               // crypto currency pair i.e., BTC/USD
-  std::string _currentWeight;                         // Get info about current interval weight
-  std::vector<std::vector<std::string>> _plotData;    // Data to plot into dashboard
-  std::vector<std::vector<std::vector<std::string>>> _plotDataVector;
-  std::string _cointToPlot;                           // Coin to be plotted
-  std::vector<std::string> _coinsToPlot;              // Vector containing all coins to plot
+  std::string _curPair;                                         // crypto currency pair i.e., BTC/USD
+  std::string _currentWeight;                                   // Get info about current interval weight
+  std::vector<std::vector<std::vector<std::string>>> _plotData; // historic data for each coin to plot
+  std::string _cointToPlot;                                     // Coin to be plotted
+  std::vector<std::string> _coinsToPlot;                        // Vector containing all coins to plot
   int _id; 
   bool _allCoins; 
-  int _http_delay;                                    // HTTP request cylce in seconds
-  std::mutex _mutex;                                  // Lock certain shared resources
-  static std::vector<int> _requestWeight;             // Vector containing current request weight for given interval
+  int _http_delay;                                              // HTTP request cylce in seconds
+  std::mutex _mutex;                                            // Lock certain shared resources
+  static std::vector<int> _requestWeight;                       // Vector containing current request weight for given interval
 };
 
 #endif
