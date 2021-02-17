@@ -80,11 +80,10 @@ std::vector<std::string>Orchestrator::getCoinsToPlot(){
   return _allCryptos->getCoinsToPlot(); 
 }
 
-// std::string Orchestrator::getCoinToPlot(){
-//   return _allCryptos->getCoinToPlot(); 
-// }
-
 int Orchestrator::getCurrentWeightRequest(){
   return _allCryptos->getCurrentWeightRequest();
 }
 
+void Orchestrator::setWindowRange(int &windowRange){
+  _allCryptos->setWindowRange(windowRange); 
+}
