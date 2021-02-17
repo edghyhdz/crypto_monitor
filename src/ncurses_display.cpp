@@ -155,7 +155,7 @@ int NCursesDisplay::editViewWindow(viewwin *view)
 	/* Fill the form fields with initial values */
 	char printbuf[FIELD_MAX_CHARS+1];
 	set_field_buffer(fields[0], 0, (view->first_coin).c_str());
-	set_field_buffer(fields[1], 0, (view->secondary_coin).c_str());
+	set_field_buffer(fields[1], 0, (view->second_coin).c_str());
 	set_field_buffer(fields[2], 0, (view->third_coin).c_str());
 
 	/* Create a subwindow for the form fields */
@@ -201,7 +201,7 @@ int NCursesDisplay::editViewWindow(viewwin *view)
 	if (savewin) {
           form_driver(f, REQ_VALIDATION);
           view->first_coin = field_buffer(fields[0], 0);
-          view->secondary_coin = field_buffer(fields[1], 0);
+          view->second_coin = field_buffer(fields[1], 0);
           view->third_coin = field_buffer(fields[2], 0);
         }
 
@@ -283,7 +283,7 @@ void NCursesDisplay::DrawGraph(WINDOW *window, const viewwin *view, std::vector<
     DrawSubPlot(window, allPlotData[0], 'o', 4, view->first_coin, 35);
   }
   if (allPlotData[1].size() > 0) {
-    DrawSubPlot(window, allPlotData[1], '*', 5, view->secondary_coin, 70);
+    DrawSubPlot(window, allPlotData[1], '*', 5, view->second_coin, 70);
   }
   if (allPlotData[2].size() > 0) {
     DrawSubPlot(window, allPlotData[2], '+', 6, view->third_coin, 105);
@@ -349,9 +349,16 @@ void NCursesDisplay::DisplayHTTPStats(WINDOW *window, int requestWeight) {
 }
 
 void setCoinsVector(std::vector<std::string> *coins_vector, viewwin &view){
+  /*  Sets coin_vector with coins given in the editViewWindow
+      display
+
+      coins_vector      - vector with coin names to plot
+      view              - view parameters structure
+
+  */
   (*coins_vector).clear(); 
   (*coins_vector).push_back(view.first_coin);
-  (*coins_vector).push_back(view.secondary_coin);
+  (*coins_vector).push_back(view.second_coin);
   (*coins_vector).push_back(view.third_coin);
 }
 
@@ -369,9 +376,6 @@ void NCursesDisplay::Display(int n) {
   // Start http requests
   Orchestrator orchestrator = Orchestrator();
   orchestrator.runQuery();
-
-  // TODO: Remove -> deprecated
-  // orchestrator.setCoinToPlot(COIN_TO_PLOT);
   
   // Send keys timeout
   keypad(system_window, true);
@@ -382,7 +386,7 @@ void NCursesDisplay::Display(int n) {
 	view.ymin = YMIN; view.ymax = YMAX;
 	view.xscl = XSCL; view.yscl = YSCL;
   view.first_coin = COIN_TO_PLOT; 
-  view.secondary_coin = COIN_TO_PLOT_SECOND; 
+  view.second_coin = COIN_TO_PLOT_SECOND; 
   view.third_coin = ""; 
   std::vector<std::string> coins_vector; 
   std::string price; 
