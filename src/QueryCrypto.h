@@ -32,11 +32,13 @@ public:
   void setAllPlotData(std::vector<std::vector<std::vector<std::string>>> &plotData) { _plotData = plotData; }
   std::vector<std::vector<std::vector<std::string>>> getAllPlotData() {return _plotData; }
   std::vector<std::string> getCoinsToPlot(); 
-
   void addRequestWeight(std::string requestWeight); 
+  void setWindowRange(int &windowRange);
+
   // getters
   int getID() { return _id; }
   int getCurrentWeightRequest(); 
+  int getWindowRange(); 
   std::string getCoinPair(){ return _curPair; }
   std::string getCoinToPlot();
   bool allQueries(){ return _allCoins; }
@@ -45,10 +47,11 @@ public:
 private:
   std::string _curPair;                                         // crypto currency pair i.e., BTC/USD
   std::string _currentWeight;                                   // Get info about current interval weight
-  std::vector<std::vector<std::vector<std::string>>> _plotData; // historic data for each coin to plot
+  std::vector<std::vector<std::vector<std::string>>> _plotData; // historic data for each coin to
   std::string _cointToPlot;                                     // Coin to be plotted
   std::vector<std::string> _coinsToPlot;                        // Vector containing all coins to plot
   int _id; 
+  int _windowRange;                                              // Window of data to fetch from each coin
   bool _allCoins; 
   int _http_delay;                                              // HTTP request cylce in seconds
   std::mutex _mutex;                                            // Lock certain shared resources

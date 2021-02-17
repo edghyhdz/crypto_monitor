@@ -233,7 +233,7 @@ void QueryCrypto::parsePlotData(std::string file_name, std::vector<std::vector<s
       }
       line = "";
     }
-    if (row_counter >= Binance::LIM_X_DASHBOARD) {
+    if (row_counter >= this->getWindowRange()) {
       break;
     }
   }
@@ -412,4 +412,14 @@ std::vector<std::string> QueryCrypto::getCoinsToPlot() {
   std::lock_guard<std::mutex> lock(_mutex);
   if (this->_coinsToPlot.size()>0) return _coinsToPlot; 
   return {"ZILUSDTT ", "ENJUSDTT "} ;
+}
+
+void QueryCrypto::setWindowRange(int &windowRange){
+  std::lock_guard<std::mutex> lock(_mutex);
+  _windowRange = windowRange; 
+}
+
+int QueryCrypto::getWindowRange() { 
+  std::lock_guard<std::mutex> lock(_mutex);
+  return _windowRange; 
 }
