@@ -137,26 +137,29 @@ int NCursesDisplay::editViewWindow(viewwin *view)
 	mvwprintw(fwin, 2, 3, "COIN 1 =");
 	mvwprintw(fwin, 3, 3, "COIN 2 =");
 	mvwprintw(fwin, 4, 3, "COIN 2 =");
+	mvwprintw(fwin, 5, 3, "WINDOW RANGE = ");
 
 	wattroff(fwin, A_BOLD);
 	mvwprintw(fwin, 9, 6, "[SPC] OK");
 	/* Create the form fields */
-	FIELD *fields[4];
-	int i; for (i=0; i<3; i++) {
+	FIELD *fields[5];
+	int i; for (i=0; i<4; i++) {
 		fields[i] = new_field(1, 8, i, 0, 0, 0);
 		set_field_back(fields[i], A_REVERSE | A_UNDERLINE);
-		set_field_type(fields[i], TYPE_ALNUM, 6, 0.0, 0.0);
+		set_field_type(fields[i], i!=3?TYPE_ALNUM:TYPE_NUMERIC, 6, 0.0, 0.0);
 		// set_field_type(fields[i], TYPE_NUMERIC, 6, 0.0, 0.0);
 		field_opts_off(fields[i], O_AUTOSKIP | O_STATIC);
 		set_max_field(fields[i], FIELD_MAX_CHARS);
 	}
-	fields[3] = NULL;
+	fields[4] = NULL;
 
 	/* Fill the form fields with initial values */
 	char printbuf[FIELD_MAX_CHARS+1];
 	set_field_buffer(fields[0], 0, (view->first_coin).c_str());
 	set_field_buffer(fields[1], 0, (view->second_coin).c_str());
 	set_field_buffer(fields[2], 0, (view->third_coin).c_str());
+  snprintf(printbuf, FIELD_MAX_CHARS+1, "%i", view->window_range);
+	set_field_buffer(fields[3], 0, printbuf);
 
 	/* Create a subwindow for the form fields */
 	WINDOW *fsub = derwin(fwin, 6, 8, 2, 10);
@@ -203,6 +206,7 @@ int NCursesDisplay::editViewWindow(viewwin *view)
           view->first_coin = field_buffer(fields[0], 0);
           view->second_coin = field_buffer(fields[1], 0);
           view->third_coin = field_buffer(fields[2], 0);
+          view->window_range = std::stoi(field_buffer(fields[3], 0));
         }
 
   /* Clean up */
@@ -403,6 +407,7 @@ void NCursesDisplay::Display(int n) {
       // orchestrator.setCoinToPlot(view.first_coin);
       setCoinsVector(&coins_vector, view); 
       orchestrator.setCoinsToPlot(coins_vector); 
+      orchestrator.setWindowRange(view.window_range); 
       break;
     }
     int requestWeight = orchestrator.getCurrentWeightRequest(); 
