@@ -40,8 +40,8 @@ struct _viewwin {
 	double xmin, xmax;
 	double ymin, ymax;
 	double xscl, yscl;
-    std::string first_coin = COIN_TO_PLOT;
-	std::string secondary_coin ;  
+    std::string first_coin;
+	std::string second_coin ;  
 	std::string third_coin;
 	bool plot_all;  
 };
