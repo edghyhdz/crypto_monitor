@@ -28,6 +28,7 @@ user -> flarn2006
 #define PCTY 0.015
 #define COIN_TO_PLOT "CHZUSDTT"
 #define COIN_TO_PLOT_SECOND "ENJUSDTT"
+#define WINDOW_RANGE 180	// DATA_RANGE * Fetch interval = total seconds of data i.e. 180 * 10s-interval ->30 min window
 #define FIELD_MAX_CHARS 32
 
 namespace NCursesDisplay {void Display(int n);
@@ -40,6 +41,7 @@ struct _viewwin {
 	double xmin, xmax;
 	double ymin, ymax;
 	double xscl, yscl;
+	int window_range; 
     std::string first_coin;
 	std::string second_coin ;  
 	std::string third_coin;
