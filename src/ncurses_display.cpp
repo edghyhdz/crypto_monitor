@@ -385,6 +385,7 @@ void NCursesDisplay::Display(int n) {
 	view.xmin = XMIN; view.xmax = XMAX;
 	view.ymin = YMIN; view.ymax = YMAX;
 	view.xscl = XSCL; view.yscl = YSCL;
+  view.window_range = WINDOW_RANGE; 
   view.first_coin = COIN_TO_PLOT; 
   view.second_coin = COIN_TO_PLOT_SECOND; 
   view.third_coin = ""; 
@@ -393,6 +394,7 @@ void NCursesDisplay::Display(int n) {
 
   setCoinsVector(&coins_vector, view); 
   orchestrator.setCoinsToPlot(coins_vector); 
+  orchestrator.setWindowRange(view.window_range); 
 
   while (1) {
     switch(wgetch(system_window)){
