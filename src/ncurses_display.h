@@ -30,6 +30,7 @@ user -> flarn2006
 #define COIN_TO_PLOT_SECOND "ENJUSDTT"
 #define WINDOW_RANGE 180	// DATA_RANGE * Fetch interval = total seconds of data i.e. 180 * 10s-interval ->30 min window
 #define FIELD_MAX_CHARS 32
+#define WALLET true
 
 namespace NCursesDisplay {void Display(int n);
 
@@ -46,6 +47,7 @@ struct _viewwin {
 	std::string second_coin ;  
 	std::string third_coin;
 	bool plot_all;  
+	bool wallet; 
 };
 
 struct _khdata {
@@ -60,7 +62,7 @@ struct _khdata {
 */
 double scale(double value, double omin, double omax, double nmin, double nmax); 
 void getViewStep(WINDOW *win, const viewwin *view, double *xstep, double *ystep);
-void DisplayHTTPStats(WINDOW *window, int requestWeight); 
+void DisplayHTTPStats(WINDOW *window, int requestWeight, bool wallet); 
 void DrawAxes(WINDOW *window, const viewwin *view); 
 void DrawGraph(WINDOW *window, const viewwin *view, std::vector<std::vector<std::vector<std::string>>> &plotData);
 void DrawSubPlot(WINDOW *window, std::vector<std::vector<std::string>> &plotData, char ch, int color, std::string coin_name, int x_offset); 
