@@ -7,12 +7,78 @@
 #include <sstream>
 #include <thread>
 #include <unistd.h>
+#include <chrono>
+#include <openssl/hmac.h>
+#include <iomanip> 
 
 using std::ifstream; 
+using namespace std::chrono;
+
+// TODO: 
+// Reference https://github.com/Chudleyj/Binance-Trading-Bot.git
+auto binary_to_hex_digit(unsigned a) -> char{
+    return a + (a < 10 ? '0' : 'a' - 10);
+}
+
+// Reference https://github.com/Chudleyj/Binance-Trading-Bot.git
+auto binary_to_hex(unsigned char const* binary, unsigned binary_len) -> std::string {
+    std::string r(binary_len * 2, '\0');
+    for(unsigned i = 0; i < binary_len; ++i) {
+        r[i * 2] = binary_to_hex_digit(binary[i] >> 4);
+        r[i * 2 + 1] = binary_to_hex_digit(binary[i] & 15);
+    }
+    return r;
+}
+
+void formatData(std::string &readBuffer, std::map<std::string, double> *coinToQuantity) {
+  std::string::size_type index;
+  std::istringstream resp(readBuffer);
+  // std::map<std::string, double> coinToQuantity;
+  size_t pos = 0;
+  std::string token, data;
+  std::string delimiter = "}";
+  std::string first_word = "makerCommission";
+  std::string last_word = "SPOT";
+
+  while (std::getline(resp, data)) {
+    index = data.find('[', 0);
+    if (index != std::string::npos) {
+      std::replace(data.begin(), data.end(), '[', ' ');
+      std::replace(data.begin(), data.end(), ']', '}');
+      // While delimiter is found
+      while ((pos = data.find(delimiter)) != std::string::npos) {
+
+        token = data.substr(0, pos);
+
+        // Replace quotes with empty char
+        std::replace(token.begin(), token.end(), '"', ' ');
+        std::replace(token.begin(), token.end(), '{', ' ');
+
+        // Split token into key/value
+        std::vector<std::string> splitString = Binance::split(token, ",");
+        data.erase(0, pos + delimiter.length());
+        if (splitString.size() > 0) {
+          if (splitString[0].find(first_word) == std::string::npos &&
+              splitString[0].find(last_word) == std::string::npos) {
+            std::vector<std::string> price =  Binance::split(splitString[1], ":");
+
+            if (stoi(price[1]) > 0) {
+              std::vector<std::string> asset_coin =  Binance::split(splitString[0], ":");
+              std::string coin_name = asset_coin[1]; 
+              std::remove(coin_name.begin(), coin_name.end(), ' ');
+              (*coinToQuantity).insert(std::make_pair(coin_name, stod(price[1])));
+            }
+          }
+        }
+      }
+    }
+  }
+}
 
 /*
 QueryCrypto class definitions
 */
+
 
 std::vector<int> QueryCrypto::_requestWeight;
 
@@ -26,61 +92,179 @@ void QueryCrypto::runSingleQueries() {
   }
 }
 
-// Queries data to binance endpoint
-void QueryCrypto::getData() {
-  
-  curl_global_init(CURL_GLOBAL_ALL);
-  long http_code = 0; 
-  CURL *curl = curl_easy_init();
+// Add pointer to dictionary from Orchestrator
+void QueryCrypto::runWalletQuery() {
+  long http_code; 
   std::string readBuffer;
   std::map<std::string, std::string> hDictionary; 
-  std::string url;
+  // std::map<std::string, double> *coinToQuantity; 
+  // Do http request
+  this->getRequest(&readBuffer, &http_code, &hDictionary, true);
 
-  // Check if all coins need to be queried and assign endpoint accordingly
-  if (this->allQueries()){
-    url = Binance::TICKER; 
+  std::lock_guard<std::mutex> lock(_mutex);
+  formatData(readBuffer, &this->_coinToQuantity);  
+
+  // Check if response was successfull
+  if (http_code == Binance::OK_RESPONSE) {
   }
-  else {
+}
+
+std::map<std::string, double> QueryCrypto::getCoinToQuantity(){
+  std::lock_guard<std::mutex> lock(_mutex);
+  return _coinToQuantity; 
+}
+
+void QueryCrypto::getRequest(std::string *readBuffer, long *http_code, std::map<std::string, std::string> *hDictionary, bool wallet=false){
+
+  std::string url; 
+  // Check if all coins need to be queried and assign endpoint accordingly
+  if (this->getQueryType() == "all"){
+    url = Binance::TICKER; 
+  } else if (this->getQueryType() == "single"){
     url = Binance::BASE_URL + this->getCoinPair(); 
   }
+  else {
+    url =Binance::ACCOUNT_URL; 
+  }
 
+  curl_global_init(CURL_GLOBAL_ALL);
+  CURL *curl = curl_easy_init();
+  
+  // Headers and set up signature
+  if (wallet){
+    // TODO: Fix all these, make it into a proper function
+    const char *API_KEY = std::getenv("BINANCE_API_KEY");
+    const char *API_SECRET = std::getenv("BINANCE_API_SECRET");
+    unsigned char result[EVP_MAX_MD_SIZE];
+    unsigned result_len = 0;
+
+    std::string api_key(API_KEY);
+    std::string key(API_SECRET);
+    long ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+
+    std::string message = "timestamp=" + std::to_string(ms);
+    
+
+    HMAC(EVP_sha256(), key.data(), key.size(),
+         reinterpret_cast<unsigned char const *>(message.data()),
+         message.size(), result, &result_len);
+
+    curl_slist *list;
+    std::string signature = binary_to_hex(result, result_len);
+    std::cout << "Secret message: " << signature << std::endl;
+
+    url = url + "?" + message + "&signature=" + signature;
+
+    list = curl_slist_append(list, ("X-MBX-APIKEY: " + api_key + "\r\n").c_str());
+    list = curl_slist_append(list, "timeout: 10\r\n");
+    list = curl_slist_append(list, "\r\n");
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+  }
   curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
   // curl_easy_setopt(curl, CURLOPT_PROXYPORT, 8080L);
   // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
   curl_easy_setopt(curl, CURLOPT_HEADER, 1); // Used to write response header data back
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Binance::WriteCallback);
-  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, readBuffer);
   curl_easy_perform(curl);
-  curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code); 
+  curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, http_code); 
   curl_easy_cleanup(curl);
   curl_global_cleanup();
 
-  // Parse header dictionary
-  // To be used to check current requests weight -> limit / minute
-  hDictionary = this->parseHeaderData(readBuffer);
-  
-  if (http_code == Binance::OK_RESPONSE){
+  *hDictionary = this->parseHeaderData(*readBuffer);
+}
+
+void QueryCrypto::getData(){
+  long http_code; 
+  std::string readBuffer;
+  std::map<std::string, std::string> hDictionary; 
+
+  // Do http request
+  this->getRequest(&readBuffer, &http_code, &hDictionary);
+
+  // Check if response was successfull
+  if (http_code == Binance::OK_RESPONSE) {
 
     // Add request to request vector
-    this->addRequestWeight(hDictionary.at(Binance::USED_WEIGHT)); 
+    this->addRequestWeight(hDictionary.at(Binance::USED_WEIGHT));
 
     // Save data into csv file
-    if (this->allQueries()) {
-      this->saveAllCoinsCSVData(readBuffer); 
-    } else {
+    if (this->getQueryType() == "all") {
+      this->saveAllCoinsCSVData(readBuffer);
+    } else if (this->getQueryType() == "single") {
       this->saveCSVData(readBuffer);
     }
-
   } else {
     std::this_thread::sleep_for(std::chrono::seconds(10));
-    std::cout << "Continuing" << std::endl; 
+    std::cout << "Continuing" << std::endl;
   }
-  
-  if (std::stoi(hDictionary.at(Binance::USED_WEIGHT)) > Binance::INTERVAL_LIMIT){
+
+  if (std::stoi(hDictionary.at(Binance::USED_WEIGHT)) >
+      Binance::INTERVAL_LIMIT) {
+    // TODO:
     // If limit is about to exceed -> send message to kill all requests
-    std::cout << "Should send message to all threads to terminate" << std::endl; 
+    std::cout << "Should send message to all threads to terminate" << std::endl;
   }
 }
+
+// Queries data to binance endpoint
+// void QueryCrypto::getData() {
+  
+//   curl_global_init(CURL_GLOBAL_ALL);
+//   long http_code = 0; 
+//   CURL *curl = curl_easy_init();
+//   std::string readBuffer;
+//   std::map<std::string, std::string> hDictionary; 
+//   std::string url;
+
+//   // Check if all coins need to be queried and assign endpoint accordingly
+//   if (this->getQueryType() == "all"){
+//     url = Binance::TICKER; 
+//   } else if (this->getQueryType() == "single"){
+//     url = Binance::BASE_URL + this->getCoinPair(); 
+//   }
+//   else {
+//     std::cout << "Pass" << std::endl; 
+//   }
+
+//   curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+//   // curl_easy_setopt(curl, CURLOPT_PROXYPORT, 8080L);
+//   // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+//   curl_easy_setopt(curl, CURLOPT_HEADER, 1); // Used to write response header data back
+//   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Binance::WriteCallback);
+//   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+//   curl_easy_perform(curl);
+//   curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code); 
+//   curl_easy_cleanup(curl);
+//   curl_global_cleanup();
+
+//   // Parse header dictionary
+//   // To be used to check current requests weight -> limit / minute
+//   hDictionary = this->parseHeaderData(readBuffer);
+  
+//   if (http_code == Binance::OK_RESPONSE){
+
+//     // Add request to request vector
+//     this->addRequestWeight(hDictionary.at(Binance::USED_WEIGHT)); 
+
+//     // Save data into csv file
+//     if (this->getQueryType() == "all") {
+//       this->saveAllCoinsCSVData(readBuffer); 
+//     } else if (this->getQueryType() == "single"){
+//       this->saveCSVData(readBuffer);
+//     }
+//   } else {
+//     std::this_thread::sleep_for(std::chrono::seconds(10));
+//     std::cout << "Continuing" << std::endl; 
+//   }
+  
+//   if (std::stoi(hDictionary.at(Binance::USED_WEIGHT)) > Binance::INTERVAL_LIMIT){
+//     // TODO: 
+//     // If limit is about to exceed -> send message to kill all requests
+//     std::cout << "Should send message to all threads to terminate" << std::endl; 
+//   }
+// }
 
 // saves data into csv file from all coins on binance
 void QueryCrypto::saveAllCoinsCSVData(std::string &readBuffer){
@@ -90,7 +274,6 @@ void QueryCrypto::saveAllCoinsCSVData(std::string &readBuffer){
   std::vector<std::vector<std::string>> allData; 
   std::vector<std::vector<std::vector<std::string>>> allDataTest; 
 
-  std::vector<std::vector<int>> workerLoad;  // Index thread should work with
   auto system_clock = std::chrono::system_clock::now();
   long time_stamp = std::chrono::duration_cast<std::chrono::milliseconds>(system_clock.time_since_epoch()).count();
   std::string time_stamp_str = std::to_string(time_stamp); 
@@ -100,7 +283,6 @@ void QueryCrypto::saveAllCoinsCSVData(std::string &readBuffer){
   size_t pos = 0;
   std::string token, row, columns, last_char, data;
   std::string delimiter = "}";
-  bool lastColumn = false;
   int index_end = 0; 
 
   while (std::getline(resp, data)) {
@@ -114,8 +296,6 @@ void QueryCrypto::saveAllCoinsCSVData(std::string &readBuffer){
       while ((pos = data.find(delimiter)) != std::string::npos) {
 
         token = data.substr(0, pos);
-        // Check if we are in the last column
-        lastColumn = (token.find('}') != std::string::npos) ? true : false;
 
         // Replace quotes with empty char
         std::replace(token.begin(), token.end(), '"', ' ');
@@ -179,8 +359,6 @@ void QueryCrypto::saveAllCoinsCSVData(std::string &readBuffer){
 
 // QueryCrypto::saveAllCoinsCSVData helper function
 void QueryCrypto::saveData(std::vector<std::vector<std::string>> &chunkData, std::vector<std::vector<std::vector<std::string>>> *allPlotData){
-// void QueryCrypto::saveData(std::vector<std::vector<std::string>> &chunkData){
-
   // Vector to have all plot data from all coins to fetch
   std::vector<std::string> allCoins = this->getCoinsToPlot(); 
 
@@ -422,4 +600,14 @@ void QueryCrypto::setWindowRange(int &windowRange){
 int QueryCrypto::getWindowRange() { 
   std::lock_guard<std::mutex> lock(_mutex);
   return _windowRange; 
+}
+
+void QueryCrypto::setWalletStatus(bool wallet){
+  std::lock_guard<std::mutex> lock(_mutex);
+  _wallet = wallet; 
+}
+
+bool QueryCrypto::isWalletEnabled(){
+  std::lock_guard<std::mutex> lock(_mutex);
+  return _wallet; 
 }

@@ -14,7 +14,7 @@ Crypto currency query class declaration
 class QueryCrypto {
 public:
   // Currency pair
-  QueryCrypto(std::string curPair, int id, bool allCoins, int delay) : _curPair(curPair), _id(id), _allCoins(allCoins), _http_delay(delay) {};
+  QueryCrypto(std::string curPair, int id, std::string queryType, int delay) : _curPair(curPair), _id(id), _queryType(queryType), _http_delay(delay) {};
 
   // Making http request
   void getData(); 
@@ -34,6 +34,10 @@ public:
   std::vector<std::string> getCoinsToPlot(); 
   void addRequestWeight(std::string requestWeight); 
   void setWindowRange(int &windowRange);
+  void setWalletStatus(bool wallet); 
+  void runWalletQuery(); 
+  void getRequest(std::string *readBuffer, long *http_code, std::map<std::string, std::string> *hDictionary, bool wallet); 
+  std::map<std::string, double> getCoinToQuantity(); 
 
   // getters
   int getID() { return _id; }
@@ -41,8 +45,9 @@ public:
   int getWindowRange(); 
   std::string getCoinPair(){ return _curPair; }
   std::string getCoinToPlot();
-  bool allQueries(){ return _allCoins; }
+  std::string getQueryType() { return _queryType; }
   void parsePlotData(std::string file_name, std::vector<std::vector<std::vector<std::string>>> *plotData, ptrdiff_t pos); 
+  bool isWalletEnabled(); 
 
 private:
   std::string _curPair;                                         // crypto currency pair i.e., BTC/USD
@@ -52,10 +57,12 @@ private:
   std::vector<std::string> _coinsToPlot;                        // Vector containing all coins to plot
   int _id; 
   int _windowRange;                                              // Window of data to fetch from each coin
-  bool _allCoins; 
+  std::string _queryType; 
   int _http_delay;                                              // HTTP request cylce in seconds
   std::mutex _mutex;                                            // Lock certain shared resources
   static std::vector<int> _requestWeight;                       // Vector containing current request weight for given interval
+  bool _wallet; 
+  std::map<std::string, double> _coinToQuantity; 
 };
 
 #endif
