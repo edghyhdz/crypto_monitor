@@ -30,6 +30,8 @@ auto binary_to_hex(unsigned char const* binary, unsigned binary_len) -> std::str
     return r;
 }
 
+// TODO: 
+// Add delimiters to parse json into binance namespace
 void formatData(std::string &readBuffer, std::map<std::string, double> *coinToQuantity) {
   std::string::size_type index;
   std::istringstream resp(readBuffer);
