@@ -466,6 +466,7 @@ void NCursesDisplay::Display(int n) {
     // }
 
     // TODO: Fix all these
+    // If portfolio display is enabled -> wallet
     if (view.wallet) {
       if (!walletExists) {
         coinToQuantity = orchestrator.getCoinToQuantity();
