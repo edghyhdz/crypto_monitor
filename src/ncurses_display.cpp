@@ -339,17 +339,18 @@ void NCursesDisplay::DisplayData(WINDOW *window, std::vector<std::vector<std::st
   }
 }
 
-void NCursesDisplay::DisplayHTTPStats(WINDOW *window, int requestWeight) {
+void NCursesDisplay::DisplayHTTPStats(WINDOW *window, int requestWeight, bool wallet) {
   int row{0};
   int column {5}; 
   wattron(window, A_BOLD);
   wattron(window, COLOR_PAIR(4));
   std::string title = "Current request weight:";
+  std::string wallet_enabled = "Wallet enabled: ";  
   mvwprintw(window, 1, window->_maxx - 25, title.c_str());
   mvwprintw(window, 2, window->_maxx - 25, (to_string(requestWeight) + "/1200/min").c_str()); 
+  mvwprintw(window, 3, window->_maxx - 25, (wallet_enabled + (wallet?"YES":"NO")).c_str()); 
   wattroff(window, COLOR_PAIR(4));
   wattroff(window, A_BOLD);
-
 }
 
 void setCoinsVector(std::vector<std::string> *coins_vector, viewwin &view){
@@ -373,13 +374,11 @@ void NCursesDisplay::Display(int n) {
   start_color();  // enable color
   
   int x_max{getmaxx(stdscr)};
+  bool walletExists = false; 
+  std::map<std::string, double> coinToQuantity; 
   WINDOW* system_window = newwin(9, x_max - 1, 0, 0);
   WINDOW *plot_window = newwin(3 + n, x_max - (x_max * 1 / 6) - 3, system_window->_maxy + 1, 0);
   WINDOW *data_window = newwin(3 + n, x_max - (x_max * 5 / 6), system_window->_maxy + 1, (x_max * 5 / 6) - 1);
-
-  // Start http requests
-  Orchestrator orchestrator = Orchestrator();
-  orchestrator.runQuery();
   
   // Send keys timeout
   keypad(system_window, true);
@@ -393,12 +392,22 @@ void NCursesDisplay::Display(int n) {
   view.first_coin = COIN_TO_PLOT; 
   view.second_coin = COIN_TO_PLOT_SECOND; 
   view.third_coin = ""; 
+  view.wallet = WALLET; 
+
   std::vector<std::string> coins_vector; 
   std::string price; 
+
+  // Start http requests
+  Orchestrator orchestrator = Orchestrator(WALLET);
 
   setCoinsVector(&coins_vector, view); 
   orchestrator.setCoinsToPlot(coins_vector); 
   orchestrator.setWindowRange(view.window_range); 
+  orchestrator.setWalletStatus(view.wallet);
+
+  orchestrator.runQuery();
+
+  
 
   while (1) {
     switch(wgetch(system_window)){
@@ -410,6 +419,8 @@ void NCursesDisplay::Display(int n) {
       orchestrator.setWindowRange(view.window_range); 
       break;
     }
+
+    // Get current request weight from binance api and data to plot
     int requestWeight = orchestrator.getCurrentWeightRequest(); 
     std::vector<std::vector<std::vector<std::string>>> allPlotData = orchestrator.getAllPlotData();
 
@@ -429,7 +440,7 @@ void NCursesDisplay::Display(int n) {
     box(system_window, 0, 0);
     box(plot_window, 0, 0);
     box(data_window, 0, 0);
-    DisplayHTTPStats(system_window, requestWeight);
+    DisplayHTTPStats(system_window, requestWeight, view.wallet);
     DrawAxes(plot_window, &view);
     if (allPlotData.size() > 0){ 
       if (!allPlotData[0].empty()){
@@ -438,21 +449,46 @@ void NCursesDisplay::Display(int n) {
       }
     }
 
-    int row_temp = 0;
-    for (std::string coin : orchestrator.getCoinsToPlot()) {
-      coin = coin + ":";
-      mvwprintw(system_window, ++row_temp, 1, coin.c_str());
-    }
+    // int row_temp = 0;
+    // for (std::string coin : orchestrator.getCoinsToPlot()) {
+    //   coin = coin + ":";
+    //   mvwprintw(system_window, ++row_temp, 1, coin.c_str());
+    // }
 
-    row_temp = 0;
-    if (allPlotData.size() > 0){
-      for (int k=0; k<allPlotData.size(); k++){
-        if (!allPlotData[k].empty()){
-          price = allPlotData[k].front()[1];
-          mvwprintw(system_window, ++row_temp, 10, price.c_str());
+    // row_temp = 0;
+    // if (allPlotData.size() > 0){
+    //   for (int k=0; k<allPlotData.size(); k++){
+    //     if (!allPlotData[k].empty()){
+    //       price = allPlotData[k].front()[1];
+    //       mvwprintw(system_window, ++row_temp, 10, price.c_str());
+    //     }
+    //   }
+    // }
+
+    // TODO: Fix all these
+    if (view.wallet) {
+      if (!walletExists) {
+        coinToQuantity = orchestrator.getCoinToQuantity();
+        if (coinToQuantity.size() > 0) {
+          walletExists = true;
+        }
+      }
+
+      // std::string teste = "SIZE: " + to_string(coinToQuantity.size()); 
+      if (!(coinToQuantity.find("x") == coinToQuantity.end())) {
+        // found
+        mvwprintw(system_window, 1, 20, to_string(coinToQuantity.at(" ATOM ")).c_str());
+      } else {
+        // not found
+        // mvwprintw(system_window, 1, 20, teste.c_str());
+        int counter = -1; 
+        for (auto &kv : coinToQuantity) {
+          mvwprintw(system_window, ++counter, 1, (kv.first + ": ").c_str());
+          mvwprintw(system_window, counter, 9, std::to_string(kv.second).c_str());
         }
       }
     }
+
     wrefresh(system_window);
     wrefresh(plot_window);
     wrefresh(data_window); 
