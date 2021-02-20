@@ -5,8 +5,6 @@ g++ -g src/QueryCrypto.cpp src/QueryCrypto.h src/Binance.h src/Orchestrator.cpp 
 */
 
 #include "ncurses_display.h"
-#include <thread>
-
 int main() {
   int n = 41;
   NCursesDisplay::Display(n);
