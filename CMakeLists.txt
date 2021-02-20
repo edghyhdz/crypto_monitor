@@ -12,6 +12,7 @@ find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIR})
 
 include_directories(include)
+include_directories(Utils)
 
 # Find all executables
 file(GLOB project_SRCS src/*.cpp) #src/*.h
