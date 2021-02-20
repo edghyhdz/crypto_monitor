@@ -39,6 +39,9 @@ public:
   void setWindowRange(int &windowRange);
   void setWalletStatus(bool wallet); 
   std::map<std::string, double> getCoinToQuantity(); 
+  std::map<std::string, double> getCoinToPrice(); 
+  void setCoinToPrice(std::string file_name, std::string coin); 
+  void updateCoinToPrice(std::string price, std::string coin); 
 
   // getters
   int getID() { return _id; }
@@ -63,7 +66,8 @@ private:
   std::mutex _mutex;                                            // Lock certain shared resources
   static std::vector<int> _requestWeight;                       // Vector containing current request weight for given interval
   bool _wallet; 
-  std::map<std::string, double> _coinToQuantity; 
+  static std::map<std::string, double> _coinToQuantity;
+  static std::map<std::string, double> _coinToPrice;  
 };
 
 #endif

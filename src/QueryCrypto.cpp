@@ -21,6 +21,8 @@ QueryCrypto class definitions
 */
 
 std::vector<int> QueryCrypto::_requestWeight;
+std::map<std::string, double> QueryCrypto::_coinToQuantity; 
+std::map<std::string, double> QueryCrypto::_coinToPrice; 
 
 // Run queries in a while loop
 void QueryCrypto::runSingleQueries() {
@@ -53,6 +55,11 @@ void QueryCrypto::runWalletQuery() {
 std::map<std::string, double> QueryCrypto::getCoinToQuantity(){
   std::lock_guard<std::mutex> lock(_mutex);
   return _coinToQuantity; 
+}
+
+std::map<std::string, double> QueryCrypto::getCoinToPrice(){
+  std::lock_guard<std::mutex> lock(_mutex);
+  return _coinToPrice; 
 }
 
 void QueryCrypto::getRequest(std::string *readBuffer, long *http_code, std::map<std::string, std::string> *hDictionary, bool wallet=false){
@@ -236,6 +243,12 @@ void QueryCrypto::saveAllCoinsCSVData(std::string &readBuffer){
 void QueryCrypto::saveData(std::vector<std::vector<std::string>> &chunkData, std::vector<std::vector<std::vector<std::string>>> *allPlotData){
   // Vector to have all plot data from all coins to fetch
   std::vector<std::string> allCoins = this->getCoinsToPlot(); 
+  std::vector<std::string> walletCoins; 
+
+  // Only interested in USDT conversion
+  for (auto &kv : this->_coinToQuantity) {
+      walletCoins.push_back(kv.first + "USDT"); 
+  }
 
   for (int k = 0; k < chunkData.size(); k++) {
     std::ofstream outfile;
@@ -246,6 +259,16 @@ void QueryCrypto::saveData(std::vector<std::vector<std::string>> &chunkData, std
     outfile.open(file_name, std::ios_base::app);
     outfile << chunkData[k][1] + ";" + chunkData[k][2] + "\n";   
     outfile.close();
+
+    if (this->_wallet) {
+      // TODO: Fix this redundant coin name
+      std::string coin = chunkData[k][0];
+      coin.erase(remove(coin.begin(), coin.end(), ' '), coin.end());
+  
+      if (std::find(walletCoins.begin(), walletCoins.end(), coin) != walletCoins.end()){
+        this->setCoinToPrice(file_name, coin);
+      }
+    }
 
     // New implementation
     if (allCoins.size()>0){
@@ -340,6 +363,37 @@ void QueryCrypto::parsePlotData(std::string file_name, std::vector<std::vector<s
   (*allPlotData)[pos] = plotData;
   myFile.close();
 }
+
+// 
+void QueryCrypto::setCoinToPrice(std::string file_name, std::string coin){
+  char c;
+  int row_counter = 0;
+  std::ifstream myFile(file_name, std::ios::ate);
+  std::streampos size = myFile.tellg();
+  std::string line = "";
+  // Read file from bottom up
+  // Help reference https://stackoverflow.com/a/27750629/13743493
+  for (int i = 1; i <= size; i++) {
+    myFile.seekg(-i, std::ios::end);
+    myFile.get(c);
+    if (c != '\n') {
+      line += c;
+    } else {
+      row_counter++;
+      // characters are read from right to left
+      std::reverse(line.begin(), line.end());
+      std::vector<std::string> time_price = Utils::split(line, ";");
+      if (time_price.size() > 1) {
+        // Add price data
+        this->updateCoinToPrice(time_price[1], coin); 
+        break;
+      }
+      line = "";
+    }
+  }
+  myFile.close();
+}
+
 
 // Saves queried data into csv file
 void QueryCrypto::saveCSVData(std::string &readBuffer) {
@@ -514,4 +568,16 @@ void QueryCrypto::setWalletStatus(bool wallet){
 bool QueryCrypto::isWalletEnabled(){
   std::lock_guard<std::mutex> lock(_mutex);
   return _wallet; 
+}
+
+void QueryCrypto::updateCoinToPrice(std::string price, std::string coin){
+
+  std::lock_guard<std::mutex> lock(_mutex);
+  double d_price = stod(price); 
+  std::map<std::string, double>::iterator it = this->_coinToPrice.find(coin); 
+  if (it != _coinToPrice.end())
+      it->second = d_price;
+  else {
+    _coinToPrice.insert(std::make_pair(coin, d_price));
+  }
 }
