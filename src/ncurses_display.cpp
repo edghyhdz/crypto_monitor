@@ -476,7 +476,7 @@ void NCursesDisplay::Display(int n) {
       }
 
       // std::string teste = "SIZE: " + to_string(coinToQuantity.size()); 
-      if (!(coinToQuantity.find("x") == coinToQuantity.end())) {
+      if (!(coinToQuantity.find("xx") == coinToQuantity.end())) {
         // found
         mvwprintw(system_window, 1, 20, to_string(coinToQuantity.at(" ATOM ")).c_str());
       } else {
