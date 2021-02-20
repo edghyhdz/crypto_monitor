@@ -136,7 +136,7 @@ int NCursesDisplay::editViewWindow(viewwin *view)
 	mvwprintw(fwin, 0, 4, " VIEW WINDOW ");
 	mvwprintw(fwin, 2, 3, "COIN 1 =");
 	mvwprintw(fwin, 3, 3, "COIN 2 =");
-	mvwprintw(fwin, 4, 3, "COIN 2 =");
+	mvwprintw(fwin, 4, 3, "COIN 3 =");
 	mvwprintw(fwin, 5, 3, "WINDOW RANGE = ");
 
 	wattroff(fwin, A_BOLD);
@@ -353,6 +353,24 @@ void NCursesDisplay::DisplayHTTPStats(WINDOW *window, int requestWeight, bool wa
   wattroff(window, A_BOLD);
 }
 
+void NCursesDisplay::DisplayWallet(WINDOW *window, std::map<std::string, double> &coinToQuantity) {
+
+  if (coinToQuantity.size() > 0) {
+    int counter = 0;
+    int column = 0; 
+    for (auto &kv : coinToQuantity) {
+      wattron(window, A_BOLD);
+      mvwprintw(window, ++counter, 1 + column, (kv.first + ": ").c_str());
+      wattroff(window, A_BOLD);
+      mvwprintw(window, counter, 8 + column, std::to_string(kv.second).c_str());
+      if (counter == 6) {
+        counter = 0;
+        column += 23;
+      }
+    }
+  }
+}
+
 void setCoinsVector(std::vector<std::string> *coins_vector, viewwin &view){
   /*  Sets coin_vector with coins given in the editViewWindow
       display
@@ -404,10 +422,7 @@ void NCursesDisplay::Display(int n) {
   orchestrator.setCoinsToPlot(coins_vector); 
   orchestrator.setWindowRange(view.window_range); 
   orchestrator.setWalletStatus(view.wallet);
-
   orchestrator.runQuery();
-
-  
 
   while (1) {
     switch(wgetch(system_window)){
@@ -449,22 +464,6 @@ void NCursesDisplay::Display(int n) {
       }
     }
 
-    // int row_temp = 0;
-    // for (std::string coin : orchestrator.getCoinsToPlot()) {
-    //   coin = coin + ":";
-    //   mvwprintw(system_window, ++row_temp, 1, coin.c_str());
-    // }
-
-    // row_temp = 0;
-    // if (allPlotData.size() > 0){
-    //   for (int k=0; k<allPlotData.size(); k++){
-    //     if (!allPlotData[k].empty()){
-    //       price = allPlotData[k].front()[1];
-    //       mvwprintw(system_window, ++row_temp, 10, price.c_str());
-    //     }
-    //   }
-    // }
-
     // TODO: Fix all these
     // If portfolio display is enabled -> wallet
     if (view.wallet) {
@@ -474,20 +473,7 @@ void NCursesDisplay::Display(int n) {
           walletExists = true;
         }
       }
-
-      // std::string teste = "SIZE: " + to_string(coinToQuantity.size()); 
-      if (!(coinToQuantity.find("xx") == coinToQuantity.end())) {
-        // found
-        mvwprintw(system_window, 1, 20, to_string(coinToQuantity.at(" ATOM ")).c_str());
-      } else {
-        // not found
-        // mvwprintw(system_window, 1, 20, teste.c_str());
-        int counter = -1; 
-        for (auto &kv : coinToQuantity) {
-          mvwprintw(system_window, ++counter, 1, (kv.first + ": ").c_str());
-          mvwprintw(system_window, counter, 9, std::to_string(kv.second).c_str());
-        }
-      }
+      DisplayWallet(system_window, coinToQuantity); 
     }
 
     wrefresh(system_window);
