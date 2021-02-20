@@ -30,7 +30,8 @@ user -> flarn2006
 #define COIN_TO_PLOT_SECOND "ENJUSDTT"
 #define WINDOW_RANGE 180	// DATA_RANGE * Fetch interval = total seconds of data i.e. 180 * 10s-interval ->30 min window
 #define FIELD_MAX_CHARS 32
-#define WALLET true
+#define WALLET true 		// Change here to have wallet enabled, needs to have env variables BINANCE_API_KEY and BINANCE_API_SECRET
+							// Check QueryCrypto.cpp::getRequest()
 
 namespace NCursesDisplay {void Display(int n);
 
