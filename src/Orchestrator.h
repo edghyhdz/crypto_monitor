@@ -32,6 +32,7 @@ void setWindowRange(int &windowRange);
 void setWalletStatus(bool wallet); 
 void runWalletQuery(); 
 std::map<std::string, double> getCoinToQuantity(); 
+std::map<std::string, double> getCoinToPrice(); 
 
 // std::string getCoinToPlot();
 std::vector<std::string> getCoinsToPlot(); 

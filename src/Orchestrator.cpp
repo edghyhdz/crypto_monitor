@@ -99,3 +99,7 @@ void Orchestrator::runWalletQuery() {
 std::map<std::string, double> Orchestrator::getCoinToQuantity() { 
   return this->_walletCryptos->getCoinToQuantity(); 
 }
+
+std::map<std::string, double> Orchestrator::getCoinToPrice() { 
+  return this->_walletCryptos->getCoinToPrice(); 
+}
