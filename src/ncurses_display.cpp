@@ -353,7 +353,7 @@ void NCursesDisplay::DisplayHTTPStats(WINDOW *window, int requestWeight, bool wa
   wattroff(window, A_BOLD);
 }
 
-void NCursesDisplay::DisplayWallet(WINDOW *window, std::map<std::string, double> &coinToQuantity) {
+void NCursesDisplay::DisplayWallet(WINDOW *window, std::map<std::string, double> &coinToQuantity, std::map<std::string, double> &coinToPrice) {
 
   if (coinToQuantity.size() > 0) {
     int counter = 0;
@@ -363,6 +363,18 @@ void NCursesDisplay::DisplayWallet(WINDOW *window, std::map<std::string, double>
       mvwprintw(window, ++counter, 1 + column, (kv.first + ": ").c_str());
       wattroff(window, A_BOLD);
       mvwprintw(window, counter, 8 + column, std::to_string(kv.second).c_str());
+      if (counter == 6) {
+        counter = 0;
+        column += 23;
+      }
+    }
+    counter = 0;
+    column = 0; 
+    for (auto &kv : coinToPrice) {
+      wattron(window, A_BOLD);
+      mvwprintw(window, ++counter, 60 + column, (kv.first + ": ").c_str());
+      wattroff(window, A_BOLD);
+      mvwprintw(window, counter, 75 + column, std::to_string(kv.second).c_str());
       if (counter == 6) {
         counter = 0;
         column += 23;
@@ -438,6 +450,7 @@ void NCursesDisplay::Display(int n) {
     // Get current request weight from binance api and data to plot
     int requestWeight = orchestrator.getCurrentWeightRequest(); 
     std::vector<std::vector<std::vector<std::string>>> allPlotData = orchestrator.getAllPlotData();
+    std::map<std::string, double> coinToPrice; 
 
     init_pair(1, COLOR_BLUE, COLOR_BLACK);
     init_pair(2, COLOR_GREEN, COLOR_BLACK);
@@ -473,7 +486,8 @@ void NCursesDisplay::Display(int n) {
           walletExists = true;
         }
       }
-      DisplayWallet(system_window, coinToQuantity); 
+      coinToPrice = orchestrator.getCoinToPrice(); 
+      DisplayWallet(system_window, coinToQuantity, coinToPrice); 
     }
 
     wrefresh(system_window);
