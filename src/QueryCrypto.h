@@ -20,12 +20,15 @@ public:
   void getData(); 
   void getAllData(); 
   void runSingleQueries(); 
+  void runWalletQuery(); 
+  void getRequest(std::string *readBuffer, long *http_code, std::map<std::string, std::string> *hDictionary, bool wallet); 
+
   // Data processing
   void saveCSVData(std::string &readBuffer); 
   void saveAllCoinsCSVData(std::string &readBuffer); 
-  // void saveData(std::vector<std::vector<std::string>> &chunkData); 
   void saveData(std::vector<std::vector<std::string>> &chunkData, std::vector<std::vector<std::vector<std::string>>> *allPlotData); 
   std::map<std::string, std::string> parseHeaderData(std::string &readBuffer); 
+  void formatData(std::string &readBuffer, std::map<std::string, double> *coinToQuantity); 
 
   // setters
   void setCoinsToPlot(std::vector<std::string> coinsToPlot); 
@@ -35,8 +38,6 @@ public:
   void addRequestWeight(std::string requestWeight); 
   void setWindowRange(int &windowRange);
   void setWalletStatus(bool wallet); 
-  void runWalletQuery(); 
-  void getRequest(std::string *readBuffer, long *http_code, std::map<std::string, std::string> *hDictionary, bool wallet); 
   std::map<std::string, double> getCoinToQuantity(); 
 
   // getters
