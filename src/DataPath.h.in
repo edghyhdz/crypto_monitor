@@ -1,0 +1,2 @@
+// Used to set DATA_PATH variable from CMakeList.txt file
+#define DATA_PATH "${DATA_PATH}"
