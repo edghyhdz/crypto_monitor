@@ -63,16 +63,16 @@ struct _khdata {
 */
 double scale(double value, double omin, double omax, double nmin, double nmax); 
 void getViewStep(WINDOW *win, const viewwin *view, double *xstep, double *ystep);
-void DisplayHTTPStats(WINDOW *window, int requestWeight, bool wallet); 
-void DisplayWallet(WINDOW *window, std::map<std::string, double> & coinToQuantity, std::map<std::string, double> &coinToPrice); 
 void DrawAxes(WINDOW *window, const viewwin *view); 
 void DrawGraph(WINDOW *window, const viewwin *view, std::vector<std::vector<std::vector<std::string>>> &plotData);
-void DrawSubPlot(WINDOW *window, std::vector<std::vector<std::string>> &plotData, char ch, int color, std::string coin_name, int x_offset); 
 void defaultKeyHandler(int key, khdata *data);
 int editViewWindow(viewwin *view); 
 /*  Finished.
     flarn2006's cool repo
 */
+void DrawSubPlot(WINDOW *window, std::vector<std::vector<std::string>> &plotData, char ch, int color, std::string coin_name, int x_offset); 
+void DisplayHTTPStats(WINDOW *window, int requestWeight, bool wallet); 
+void DisplayWallet(WINDOW *window, std::map<std::string, double> & coinToQuantity, std::map<std::string, double> &coinToPrice); 
 void DisplayData(WINDOW *window, std::vector<std::vector<std::string>> &plotData);
 
 }; // namespace NCursesDisplay
