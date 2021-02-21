@@ -254,7 +254,8 @@ void QueryCrypto::saveData(std::vector<std::vector<std::string>> &chunkData, std
   for (int k = 0; k < chunkData.size(); k++) {
     std::ofstream outfile;
     std::string coin_name = chunkData[k][0]; 
-    std::remove(coin_name.begin(), coin_name.end(), ' ');
+    // std::remove(coin_name.begin(), coin_name.end(), ' ');
+    coin_name.erase(remove(coin_name.begin(), coin_name.end(), ' '), coin_name.end());
     std::string file_name = DATA_PATH + coin_name + ".csv";
     // std::string file_name = Utils::getCurrentDirectory() + "/data_test/" + coin_name + ".csv";
 
@@ -539,7 +540,7 @@ void QueryCrypto::setCoinsToPlot(std::vector<std::string> coinsToPlot){
   this->_coinsToPlot.clear(); 
   for (std::string &coin : coinsToPlot){
     coin.erase(remove(coin.begin(), coin.end(), ' '), coin.end());
-    coin = coin + " "; 
+    coin = coin; 
     this->_coinsToPlot.push_back(coin); 
   }
 }
@@ -550,7 +551,7 @@ std::vector<std::string> QueryCrypto::getCoinsToPlot() {
   */
   std::lock_guard<std::mutex> lock(_mutex);
   if (this->_coinsToPlot.size()>0) return _coinsToPlot; 
-  return {"ZILUSDTT ", "ENJUSDTT "} ;
+  return {"ZILUSDT", "ENJUSDT"} ;
 }
 
 void QueryCrypto::setWindowRange(int &windowRange){
