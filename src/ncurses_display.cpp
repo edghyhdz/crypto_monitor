@@ -25,7 +25,7 @@ using namespace NCursesDisplay;
 using std::string;
 using std::to_string;
 
-
+// Format price displayed in DisplayWallet method
 std::string getFormatAmount(double value){
   std::stringstream sst;
   sst.imbue(std::locale(""));
@@ -367,63 +367,60 @@ void NCursesDisplay::DisplayWallet(WINDOW *window, std::map<std::string, double>
   if (coinToQuantity.size() > 0) {
     
     double total_value; 
-    std::string coin_title{"COIN"};
-    std::string total_units{"Total Units"};  
-    std::string unit_price{"Price"}; 
-    std::string total_price{"Total USD"};
-    int string_length;
-    int col_width{45}; 
+    std::string const coin_title{"COIN"};
+    std::string const total_units{"Total Units"};  
+    std::string const unit_price{"Price"}; 
+    std::string const total_price{"Total USD"};
+    std::string const title_portfolio{"Total portfolio value: "}; 
+    int col_width{45}, counter{1}, column{2}; 
 
-    std::string title_portfolio = "Total portfolio value: "; 
-
-    int counter = 1;
-    int column = 0; 
     for (auto &kv : coinToQuantity) {
       wattron(window, A_BOLD);
       if ( counter == 1 ){
-        mvwprintw(window, counter, 1 + column, coin_title.c_str());
-        mvwprintw(window, counter, 7 + column, total_units.c_str());
-        mvwprintw(window, counter, 20 + column, unit_price.c_str());
-        mvwprintw(window, counter, 28 + column, total_price.c_str());
+        mvwprintw(window, counter, column, coin_title.c_str());
+        mvwprintw(window, counter, (18 + column) - total_units.size(), total_units.c_str());
+        mvwprintw(window, counter, (28 + column) - unit_price.size(), unit_price.c_str());
+        mvwprintw(window, counter, (40 + column) - total_price.size(), total_price.c_str());
       } wattroff(window, A_BOLD);
       wattron(window, COLOR_PAIR(4));
-      mvwprintw(window, ++counter, 1 + column, (kv.first).c_str());
+      mvwprintw(window, ++counter, column, (kv.first).c_str());
       wattroff(window, COLOR_PAIR(4));
-      std::string price = getFormatAmount(kv.second); 
-      mvwprintw(window, counter, (18 + column) - price.size(), price.c_str());
+      std::string units = getFormatAmount(kv.second); 
+      mvwprintw(window, counter, (18 + column) - units.size(), units.c_str());
 
       if ( coinToPrice.find(kv.first + "USDT") == coinToPrice.end() ) {
         std::string n_a = "N/A"; 
-        mvwprintw(window, counter, (25 + column) - n_a.size(), n_a.c_str());
+        mvwprintw(window, counter, (28 + column) - n_a.size(), n_a.c_str());
       }
       else if ( kv.first == "USDT" ){
         double usdt_price = coinToPrice.at(kv.first + "USDT") * kv.second;
         total_value += usdt_price;
         std::string usdt = getFormatAmount(usdt_price); 
         std::string unit_price = getFormatAmount(coinToPrice.at(kv.first + "USDT")); 
-        mvwprintw(window, counter, (25 + column) - unit_price.size(), unit_price.c_str());
-        mvwprintw(window, counter, (37 + column) - usdt.size(), usdt.c_str());
+        mvwprintw(window, counter, (28 + column) - unit_price.size(), unit_price.c_str());
+        mvwprintw(window, counter, (40 + column) - usdt.size(), usdt.c_str());
 
       } else {
         double usdt_price = coinToPrice.at(kv.first + "USDT") * kv.second;
         total_value += usdt_price;
         std::string usdt = getFormatAmount(usdt_price); 
         std::string unit_price = getFormatAmount(coinToPrice.at(kv.first + "USDT")); 
-        mvwprintw(window, counter, (25 + column) - unit_price.size(), unit_price.c_str());
-        mvwprintw(window, counter, (37 + column) - usdt.size(), usdt.c_str());
+        mvwprintw(window, counter, (28 + column) - unit_price.size(), unit_price.c_str());
+        mvwprintw(window, counter, (40 + column) - usdt.size(), usdt.c_str());
       }
 
-      if (counter == 7) { // Rows per column
+      if (counter == window->_maxy - 1) { // Rows per column
         counter = 1;
         column += col_width;
+        for (int i = 1; i < window->_maxy ; i++) {
+          // Vertical line dividing time stamps with price data
+          mvwaddch(window, i, column - 2, ACS_VLINE);
+        }
       }
     }
+
     // Total portfolio value
-    std::stringstream ss_portfolio;
-    ss_portfolio.imbue(std::locale(""));
-    ss_portfolio << std::fixed << std::setprecision(2) << total_value;
-    std::string total_value_str = ss_portfolio.str();
-    
+    std::string total_value_str = getFormatAmount(total_value); 
     wattron(window, A_BOLD);
     mvwprintw(window, 6, window->_maxx - 25, (total_value_str + " USD").c_str());
     mvwprintw(window, 5, window->_maxx - 25, title_portfolio.c_str());
