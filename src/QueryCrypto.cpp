@@ -244,6 +244,7 @@ void QueryCrypto::saveData(std::vector<std::vector<std::string>> &chunkData, std
   // Vector to have all plot data from all coins to fetch
   std::vector<std::string> allCoins = this->getCoinsToPlot(); 
   std::vector<std::string> walletCoins; 
+  // std::string data_dir = "data_test/"; 
 
   // Only interested in USDT conversion
   for (auto &kv : this->_coinToQuantity) {
@@ -398,8 +399,9 @@ void QueryCrypto::setCoinToPrice(std::string file_name, std::string coin){
 
 // Saves queried data into csv file
 void QueryCrypto::saveCSVData(std::string &readBuffer) {
+  // std::string data_dir = "data_aggregated/"; 
   std::ofstream outfile;
-  std::string file_name = this->getCoinPair() + ".csv"; 
+  std::string file_name = DATA_PATH_AGG + this->getCoinPair() + ".csv"; 
   outfile.open(file_name, std::ios_base::app);
 
   std::string::size_type index;
