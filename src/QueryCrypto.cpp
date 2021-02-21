@@ -254,7 +254,8 @@ void QueryCrypto::saveData(std::vector<std::vector<std::string>> &chunkData, std
     std::ofstream outfile;
     std::string coin_name = chunkData[k][0]; 
     std::remove(coin_name.begin(), coin_name.end(), ' ');
-    std::string file_name = Utils::getCurrentDirectory() + "/data_test/" + coin_name + ".csv";
+    std::string file_name = DATA_PATH + coin_name + ".csv";
+    // std::string file_name = Utils::getCurrentDirectory() + "/data_test/" + coin_name + ".csv";
 
     outfile.open(file_name, std::ios_base::app);
     outfile << chunkData[k][1] + ";" + chunkData[k][2] + "\n";   
