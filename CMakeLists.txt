@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.11.3)
 
+message("WALLET=${WALLET}")
+if( WALLET ) 
+    message("Wallet enabled")
+    set(WALLET true)
+else()
+    set(WALLET false)
+    message("Wallet is ${WALLET}")
+endif()
+
 # set(CMAKE_CXX_STANDARD 17)
 project(Crypto_real_time_monitor)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -std=c++17 -lcurses -lcurl -pthread -lform -lssl -lcrypto")
@@ -13,6 +22,8 @@ include_directories(${CURL_INCLUDE_DIR})
 
 # Find all executables
 file(GLOB project_SRCS src/*.cpp) #src/*.h
+
+# Make directories to store data
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/executable/data_test)
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/executable/data_aggregated)
 
@@ -31,6 +42,7 @@ add_custom_command(TARGET crypto_monitor PRE_BUILD
         COMMAND ${CMAKE_COMMAND} 
         -DDATA_PATH=${DATA_PATH} 
         -DDATA_PATH_AGG=${DATA_PATH_AGG} 
+        -DWALLET=${WALLET}
         -P ${CMAKE_CURRENT_SOURCE_DIR}/SetPath.cmake)
 
 # Add runWallet script to import environmental variables        
