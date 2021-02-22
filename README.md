@@ -155,7 +155,7 @@ source cryptomonitor
 
 There was one incredible repository I happen to come accross, this was [flarn2006](https://github.com/flarn2006)'s repository [MiscPrograms](https://github.com/flarn2006/MiscPrograms/blob/master/graph.c). 
 
-This repo included an amazing script to do plots using the `ncurses` library. I took parts of his/her script, particularyl this one [graph.c](https://github.com/flarn2006/MiscPrograms/blob/master/graph.c), and adapted it to plot in a real-time basis. 
+This repo included an amazing script to do plots using the `ncurses` library. I took parts of his/her script, particularly this one [graph.c](https://github.com/flarn2006/MiscPrograms/blob/master/graph.c), and adapted it to plot in a real-time basis. 
 
 All other references can be found inside the code.
 
