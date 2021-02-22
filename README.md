@@ -119,14 +119,18 @@ Clone this repository like so,
  ```
 Once inside the root project folder `crypto_monitor`,
  ```sh
+ # Lets start by creating the build directory
  mkdir build && cd build
 
- # If you dont want any wallet like so
+ # If you dont want to enable any Binance wallet
+ # then just run
  cmake ..
 
  # If you want to enable your binance wallet and 
  #you have input your API details (key and secret)
  cmake .. -DWALLET=true
+
+ # Finally
  source install.sh
  ```
 `install.sh` will run the final installation that will create a terimal shortcut named `cryptomonitor`. 
