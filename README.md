@@ -29,7 +29,7 @@ I know cryptocurrency might be a hot polarizing topic. This project was done to 
 
 I am by no means a crypto currency expert. This project was done out of curiosity and the fact that there is a lot of data to fetch out there, which made a project like this interesting to do. 
 
-The usage you might give to the application is at your own risk. Crypto currency trading is not a game and should not be seen as like that. 
+The usage you might give to the application is at your own risk. Crypto currency trading is not a game and should not be seen as one. 
 
 ## Description
 
