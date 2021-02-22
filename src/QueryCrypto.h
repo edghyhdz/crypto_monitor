@@ -1,7 +1,7 @@
 #ifndef CRYPTO_H
 #define CRYPTO_H
 #define ALL_COINS_ID 205  // Generic "all coins" ID
-#include "DataPath.h"
+#include "Variables.h"
 #include <string>
 #include <iostream>
 #include <map>
