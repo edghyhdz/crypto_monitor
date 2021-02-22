@@ -16,13 +16,20 @@ Conntact me on twitter [![Tweet](https://img.shields.io/twitter/url/http/shields
 
 ## Table of Contents
 
-1. [Description](#description)
-2. [Usage](#usage)
-3. [Dependencies](#dependencies)
-4. [Installation](#installation)
-5. [References](#references)
-6. [Disclaimer](#disclaimer)
+1. [Disclaimer](#disclaimer)
+2. [Description](#description)
+3. [Usage](#usage)
+4. [Dependencies](#dependencies)
+5. [Installation](#installation)
+6. [References](#references)
 7. [Author](#author)
+
+## Disclaimer
+I know cryptocurrency might be a hot polarizing topic. This project was done to exploit the fine resolution data that is easily accessible for everyone. Crypto trading should not be seen as a game at all. 
+
+I am by no means a crypto currency expert. This project was done out of curiosity and the fact that there is a lot of data to fetch out there, which made a project like this interesting to do. 
+
+The usage you might give to the application is at your own risk. Crypto currency trading is not a game and should not be seen as like that. 
 
 ## Description
 
@@ -78,7 +85,7 @@ Adding your `api key` information will make the dashboard able to display your c
 
 Displaying then, information related to all currencies you hold plus the `total potfolio value` in `usdt`. There is some information that will be always displayed as per default, this being the `current request weight`, that resets to `0` every `1 minute`. 
 
-### Usage
+## Usage
 > **Tested in linux only**
 
 **Starting the dashboard**
@@ -100,14 +107,14 @@ You can select up to 3 different `cryptos` to display on the dashboard.
 You can also select the amount of data to display. The deault is `180` data points. That corresponds to 360 seconds of data, or a `6 minute` window frame.
 
 
-### Dependencies
+## Dependencies
 
  1. [ncurses](https://www.gnu.org/software/ncurses/)```sh sudo apt install libncurses5-dev libncursesw5-dev```
  2. [libcurl](https://curl.se/libcurl/) ```sh sudo apt-get install -y libcurl-dev```
  3. [Open SSL](https://www.openssl.org/) ```sh sudo apt-get install libssl-dev```
  4. [cmake](https://www.gnu.org/software/make/) ```sh sudo apt-get -y install cmake```
 
-### Installation
+## Installation
 
 Clone this repository like so, 
  ```sh
@@ -137,7 +144,7 @@ If everything was done allright, you should be able to run the dashboard by doin
 source cryptomonitor
 ```
 
-### References
+## References
 
 There was one incredible repository I happen to come accross, this was [flarn2006](https://github.com/flarn2006)'s repository [MiscPrograms](https://github.com/flarn2006/MiscPrograms/blob/master/graph.c). 
 
@@ -145,12 +152,6 @@ This repo included an amazing script to do plots using the `ncurses` library. I 
 
 All other references can be found inside the code.
 
-### Disclaimer
-
-I am by no means a crypto currency expert. This project was done out of curiosity and the fact that there is a lot of data to fetch out there, which made a project like this interesting to do. 
-
-The usage you might give to the application is at your own risk. Crypto currency trading is not a game and should not be seen as like that. 
-
-### Author
+## Author
 
 Edgar Hernandez 
