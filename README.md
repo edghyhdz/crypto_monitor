@@ -55,13 +55,10 @@ You can add more to the `currencies` vector, these will be queried once every 10
 
 End point 2, is the one used to fetch the data that is used for the dashboard. This one is querying data every two seconds. 
 
-The third endpoint will only work if you set to `true` the `WALLET` variable in `ncurses_display.h`, 
+The third endpoint will only work if you set to `true` the `WALLET` variable in `Variables.h`. To do so you need to add the ```-DWALLET=true``` option when making the executable via cmake.
 
 ```c++
 #define WALLET false
-
-// Change to 
-#define WALLET true
 ```
 
 It is per default in `false`. If you do change it to `true`, please notice that you have to add the following env variables into your `.bashrc` file. 
@@ -109,10 +106,10 @@ You can also select the amount of data to display. The deault is `180` data poin
 
 ## Dependencies
 
- 1. [ncurses](https://www.gnu.org/software/ncurses/)```sh sudo apt install libncurses5-dev libncursesw5-dev```
- 2. [libcurl](https://curl.se/libcurl/) ```sh sudo apt-get install -y libcurl-dev```
- 3. [Open SSL](https://www.openssl.org/) ```sh sudo apt-get install libssl-dev```
- 4. [cmake](https://www.gnu.org/software/make/) ```sh sudo apt-get -y install cmake```
+ 1. [ncurses](https://www.gnu.org/software/ncurses/)``` sudo apt install libncurses5-dev libncursesw5-dev```
+ 2. [libcurl](https://curl.se/libcurl/) ``` sudo apt-get install -y libcurl-dev```
+ 3. [Open SSL](https://www.openssl.org/) ``` sudo apt-get install libssl-dev```
+ 4. [cmake](https://www.gnu.org/software/make/) ``` sudo apt-get -y install cmake```
 
 ## Installation
 
@@ -123,7 +120,13 @@ Clone this repository like so,
 Once inside the root project folder `crypto_monitor`,
  ```sh
  mkdir build && cd build
+
+ # If you dont want any wallet like so
  cmake ..
+
+ # If you want to enable your binance wallet and 
+ #you have input your API details (key and secret)
+ cmake .. -DWALLET=true
  source install.sh
  ```
 `install.sh` will run the final installation that will create a terimal shortcut named `cryptomonitor`. 
